@@ -469,24 +469,20 @@ export function UnifiedDownloadHistory({
   })
 
   useEffect(() => {
+    if (scrollParentRef.current) {
+      scrollParentRef.current.scrollTop = 0
+    }
+    rowVirtualizer.scrollToOffset(0)
     rowVirtualizer.measure()
-  }, [rowVirtualizer])
+  }, [statusFilter, rowVirtualizer])
 
-  const handleFilterChange = useCallback(
-    (filter: StatusFilter) => {
-      setStatusFilter(filter)
-      setIsTransitionLoading(true)
-      if (scrollParentRef.current) {
-        scrollParentRef.current.scrollTop = 0
-      }
-      rowVirtualizer.scrollToOffset(0)
-      rowVirtualizer.measure()
-      setTimeout(() => {
-        setIsTransitionLoading(false)
-      }, 150)
-    },
-    [rowVirtualizer]
-  )
+  const handleFilterChange = useCallback((filter: StatusFilter) => {
+    setStatusFilter(filter)
+    setIsTransitionLoading(true)
+    setTimeout(() => {
+      setIsTransitionLoading(false)
+    }, 150)
+  }, [])
 
   const renderPlaylistGroup = useCallback(
     (groupId: string) => {
