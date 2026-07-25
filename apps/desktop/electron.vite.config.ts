@@ -73,7 +73,7 @@ export default defineConfig(({ mode }) => {
         sourcemap: true
       },
       resolve: {
-        dedupe: ['react', 'react-dom', 'react-router', 'jotai'],
+        dedupe: ['react', 'react-dom', 'react-router', 'jotai', '@tanstack/react-virtual'],
         alias: {
           '@main': resolve('src/main'),
           '@renderer': resolve('src/renderer/src'),
@@ -88,6 +88,7 @@ export default defineConfig(({ mode }) => {
           'react-dom',
           'react-router',
           'jotai',
+          '@tanstack/react-virtual',
           '@radix-ui/react-scroll-area',
           '@radix-ui/react-dialog',
           '@radix-ui/react-tooltip',
