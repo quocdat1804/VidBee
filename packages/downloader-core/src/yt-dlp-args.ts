@@ -51,6 +51,9 @@ const appendNetworkResilienceArgs = (args: string[]): void => {
   args.push('--fragment-retries', DEFAULT_FRAGMENT_RETRIES)
   args.push('--retry-sleep', DEFAULT_RETRY_SLEEP)
   args.push('--socket-timeout', DEFAULT_SOCKET_TIMEOUT)
+  if (!args.includes('--concurrent-fragments') && !args.includes('-N')) {
+    args.push('--concurrent-fragments', '4')
+  }
 }
 
 const hasYouTubeHost = (host: string): boolean =>
