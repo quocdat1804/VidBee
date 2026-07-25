@@ -40,7 +40,6 @@ import {
   stopDesktopSubscriptions
 } from './lib/subscriptions-host'
 import { runDesktopTaskQueueMigration } from './lib/task-queue-migrate'
-import { applyUpdateChannel } from './lib/update-channel'
 import { ytdlpManager } from './lib/ytdlp-manager'
 import { startExtensionApiServer, stopExtensionApiServer } from './local-api'
 import { isPortableMode } from './portable'
@@ -703,8 +702,8 @@ function initAutoUpdater(): void {
 
     log.transports.file.level = 'info'
     autoUpdater.logger = log
-    autoUpdater.autoDownload = true
-    autoUpdater.autoInstallOnAppQuit = true
+    autoUpdater.autoDownload = false
+    autoUpdater.autoInstallOnAppQuit = false
 
     autoUpdater.on('update-available', (info) => {
       log.info('Update available:', info.version)
@@ -712,7 +711,6 @@ function initAutoUpdater(): void {
         version: info.version
       })
       sendToRenderer('update:available', info)
-      log.info('Automatic updates are required, update will download in the background')
     })
 
     autoUpdater.on('update-not-available', (info) => {
@@ -743,13 +741,7 @@ function initAutoUpdater(): void {
       sendToRenderer('update:downloaded', info)
     })
 
-    log.info('Auto-updater initialized successfully')
-    log.info('Automatic updates are required, checking for updates immediately...')
-    // Select stable/preview channel from the user's preview-program setting before checking.
-    applyUpdateChannel(settingsManager.get('betaProgram'))
-    // Use checkForUpdates instead of checkForUpdatesAndNotify
-    // because we have our own notification system and want to ensure immediate download
-    void autoUpdater.checkForUpdates()
+    log.info('Auto-updater initialized (auto-download disabled)')
   } catch (error) {
     log.error('Failed to initialize auto-updater:', error)
     captureMainException(error, {

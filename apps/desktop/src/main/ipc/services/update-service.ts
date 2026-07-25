@@ -104,7 +104,7 @@ class UpdateService extends IpcService {
 
   @IpcMethod()
   isAutoUpdateEnabled(_context: IpcContext): boolean {
-    return !isPortableMode
+    return false
   }
 }
 

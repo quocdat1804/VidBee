@@ -70,7 +70,7 @@ deb:
   afterInstall: build/after-install.sh
 appImage:
   artifactName: ${name}-${version}.${ext}
-npmRebuild: true
+npmRebuild: false
 publish:
   provider: github
   owner: nexmoe
