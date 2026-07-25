@@ -53,6 +53,8 @@ const toHistoryRecord = (item: DownloadHistoryItem): DownloadRecord => ({
 })
 
 export const downloadRecordsAtom = atom<Map<string, DownloadRecord>>(new Map())
+export const hasLoadedHistoryAtom = atom<boolean>(false)
+export const isHistoryLoadingAtom = atom<boolean>(true)
 
 export const addDownloadAtom = atom(null, (get, set, item: DownloadItem) => {
   const downloads = new Map(get(downloadRecordsAtom))

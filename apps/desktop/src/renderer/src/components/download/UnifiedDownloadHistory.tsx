@@ -30,6 +30,7 @@ import type { DownloadRecord } from '../../store/downloads'
 import {
   downloadStatsAtom,
   downloadsArrayAtom,
+  isHistoryLoadingAtom,
   removeHistoryRecordsAtom,
   removeHistoryRecordsByPlaylistAtom
 } from '../../store/downloads'
@@ -98,6 +99,33 @@ interface UnifiedDownloadHistoryProps {
   onOpenCookiesSettings?: () => void
 }
 
+const SKELETON_KEYS = ['sk-1', 'sk-2', 'sk-3']
+
+function HistorySkeletonList() {
+  return (
+    <div className="space-y-3 px-6 py-2">
+      {SKELETON_KEYS.map((key) => (
+        <div
+          className="flex h-24 w-full animate-pulse items-center justify-between gap-4 rounded-xl border border-border/40 bg-muted/30 p-4"
+          key={key}
+        >
+          <div className="flex items-center gap-4">
+            <div className="h-16 w-16 shrink-0 rounded-lg bg-muted/60" />
+            <div className="space-y-2">
+              <div className="h-4 w-48 rounded bg-muted/60" />
+              <div className="h-3 w-32 rounded bg-muted/40" />
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-20 rounded-lg bg-muted/50" />
+            <div className="h-8 w-8 rounded-lg bg-muted/50" />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export function UnifiedDownloadHistory({
   topContent,
   onOpenSupportedSites,
@@ -106,6 +134,7 @@ export function UnifiedDownloadHistory({
 }: UnifiedDownloadHistoryProps) {
   const { t } = useTranslation()
   const allRecords = useAtomValue(downloadsArrayAtom)
+  const isHistoryLoading = useAtomValue(isHistoryLoadingAtom)
   const downloadStats = useAtomValue(downloadStatsAtom)
   const removeHistoryRecords = useSetAtom(removeHistoryRecordsAtom)
   const removeHistoryRecordsByPlaylist = useSetAtom(removeHistoryRecordsByPlaylistAtom)
@@ -536,7 +565,9 @@ export function UnifiedDownloadHistory({
               </div>
             </div>
           )}
-          {filteredRecords.length === 0 ? (
+          {isHistoryLoading ? (
+            <HistorySkeletonList />
+          ) : filteredRecords.length === 0 ? (
             <DownloadEmptyState message={t('download.noItems')} />
           ) : (
             <div
