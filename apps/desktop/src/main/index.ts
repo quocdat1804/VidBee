@@ -820,43 +820,6 @@ app.whenReady().then(async () => {
   // IPC services are automatically registered by electron-ipc-decorator when imported
   log.info('IPC services available:', Object.keys(services))
 
-  await initializeOptionalTool({
-    initialize: () => ffmpegManager.initialize(),
-    label: 'ffmpeg',
-    logger: log
-  })
-
-  // Initialize yt-dlp
-  try {
-    log.info('Initializing yt-dlp...')
-    await ytdlpManager.initialize()
-    isYtdlpReady = true
-    log.info('yt-dlp initialized successfully')
-  } catch (error) {
-    log.error('Failed to initialize yt-dlp:', error)
-    captureMainException(error, {
-      tags: {
-        source: 'ytdlp.initialize'
-      }
-    })
-  }
-
-  if (isYtdlpReady) {
-    downloadEngine.restoreActiveDownloads()
-    flushPendingOneClickDownloads()
-  }
-
-  // NEX-131 A段: copy any pre-existing download-session.json + legacy
-  // download_history rows into the new task-queue tasks table. Idempotent;
-  // safe to run on every boot. Non-fatal if it fails.
-  try {
-    runDesktopTaskQueueMigration()
-  } catch (err) {
-    log.warn('Desktop task-queue migration failed:', err)
-  }
-
-  await startExtensionApiServer()
-
   if (BACKGROUND_MODE) {
     addMainBreadcrumb('app', 'Started in --background tray-only mode')
     log.info('Desktop launched with --background; main window will stay hidden')
@@ -864,20 +827,58 @@ app.whenReady().then(async () => {
 
   applyAutoLaunchSetting(settingsManager.get('launchAtLogin'))
 
+  // Create window and tray immediately so app window appears instantly without waiting for CLI binaries
   createWindow()
-
   initAutoUpdater()
-
-  // Create system tray
   createTray()
 
-  try {
-    await startDesktopSubscriptions()
-  } catch (err) {
-    log.warn('Desktop subscriptions failed to start:', err)
-  }
-
   handleDeepLinkArgv(process.argv)
+
+  // Initialize heavy CLI tools and background servers concurrently
+  void (async () => {
+    await initializeOptionalTool({
+      initialize: () => ffmpegManager.initialize(),
+      label: 'ffmpeg',
+      logger: log
+    })
+
+    // Initialize yt-dlp
+    try {
+      log.info('Initializing yt-dlp...')
+      await ytdlpManager.initialize()
+      isYtdlpReady = true
+      log.info('yt-dlp initialized successfully')
+    } catch (error) {
+      log.error('Failed to initialize yt-dlp:', error)
+      captureMainException(error, {
+        tags: {
+          source: 'ytdlp.initialize'
+        }
+      })
+    }
+
+    if (isYtdlpReady) {
+      downloadEngine.restoreActiveDownloads()
+      flushPendingOneClickDownloads()
+    }
+
+    // NEX-131 A段: copy any pre-existing download-session.json + legacy
+    // download_history rows into the new task-queue tasks table. Idempotent;
+    // safe to run on every boot. Non-fatal if it fails.
+    try {
+      runDesktopTaskQueueMigration()
+    } catch (err) {
+      log.warn('Desktop task-queue migration failed:', err)
+    }
+
+    await startExtensionApiServer()
+
+    try {
+      await startDesktopSubscriptions()
+    } catch (err) {
+      log.warn('Desktop subscriptions failed to start:', err)
+    }
+  })()
 
   app.on('activate', () => {
     const existingWindow = BrowserWindow.getAllWindows().find((window) => !window.isDestroyed())
