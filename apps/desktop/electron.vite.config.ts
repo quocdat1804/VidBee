@@ -76,10 +76,10 @@ export default defineConfig(({ mode }) => {
             manualChunks(id) {
               if (id.includes('node_modules')) {
                 if (
-                  id.includes('/react/') ||
-                  id.includes('/react-dom/') ||
-                  id.includes('/react-router/') ||
-                  id.includes('/jotai/')
+                  /\/node_modules\/react\//.test(id) ||
+                  /\/node_modules\/react-dom\//.test(id) ||
+                  /\/node_modules\/react-router\//.test(id) ||
+                  /\/node_modules\/jotai\//.test(id)
                 ) {
                   return 'vendor-react'
                 }
