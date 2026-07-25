@@ -34,7 +34,6 @@ import {
   removeHistoryRecordsByPlaylistAtom
 } from '../../store/downloads'
 import { settingsAtom } from '../../store/settings'
-import { ScrollArea } from '../ui/scroll-area'
 import { DownloadDialog } from './DownloadDialog'
 import { DownloadItem } from './DownloadItem'
 import { PlaylistDownloadGroup } from './PlaylistDownloadGroup'
@@ -240,12 +239,15 @@ export function UnifiedDownloadHistory({
     setConfirmAction({ type: 'delete-selected', ids: Array.from(selectedIds) })
   }
 
-  const handleRequestDeletePlaylist = (playlistId: string, title: string, ids: string[]) => {
-    if (ids.length === 0) {
-      return
-    }
-    setConfirmAction({ type: 'delete-playlist', playlistId, title, ids })
-  }
+  const handleRequestDeletePlaylist = useCallback(
+    (playlistId: string, title: string, ids: string[]) => {
+      if (ids.length === 0) {
+        return
+      }
+      setConfirmAction({ type: 'delete-playlist', playlistId, title, ids })
+    },
+    []
+  )
 
   const pruneSelectedIds = (ids: string[]) => {
     if (ids.length === 0) {
@@ -424,6 +426,27 @@ export function UnifiedDownloadHistory({
     overscan: 5
   })
 
+  const renderPlaylistGroup = useCallback(
+    (groupId: string) => {
+      const group = groupedView.groups.get(groupId)
+      if (!group) {
+        return null
+      }
+      return (
+        <PlaylistDownloadGroup
+          groupId={group.id}
+          onDeletePlaylist={handleRequestDeletePlaylist}
+          onToggleSelect={handleToggleSelect}
+          records={group.records}
+          selectedIds={selectedIds}
+          title={group.title}
+          totalCount={group.totalCount}
+        />
+      )
+    },
+    [groupedView.groups, handleRequestDeletePlaylist, handleToggleSelect, selectedIds]
+  )
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.defaultPrevented) {
@@ -474,7 +497,7 @@ export function UnifiedDownloadHistory({
           onFilterChange={setStatusFilter}
         />
       </CardHeader>
-      <ScrollArea className="flex-1 overflow-y-auto" ref={scrollParentRef}>
+      <div className="flex-1 overflow-y-auto" ref={scrollParentRef}>
         <CardContent className="w-full space-y-3 overflow-x-hidden p-0">
           {topContent}
           {showCookiesTip && (
@@ -552,23 +575,7 @@ export function UnifiedDownloadHistory({
                         onToggleSelect={handleToggleSelect}
                       />
                     ) : (
-                      (() => {
-                        const group = groupedView.groups.get(item.id)
-                        if (!group) {
-                          return null
-                        }
-                        return (
-                          <PlaylistDownloadGroup
-                            groupId={group.id}
-                            onDeletePlaylist={handleRequestDeletePlaylist}
-                            onToggleSelect={handleToggleSelect}
-                            records={group.records}
-                            selectedIds={selectedIds}
-                            title={group.title}
-                            totalCount={group.totalCount}
-                          />
-                        )
-                      })()
+                      renderPlaylistGroup(item.id)
                     )}
                   </div>
                 )
@@ -576,7 +583,7 @@ export function UnifiedDownloadHistory({
             </div>
           )}
         </CardContent>
-      </ScrollArea>
+      </div>
       {selectedCount > 0 && (
         <div className="fixed bottom-4 left-1/2 z-40 w-[calc(100%-2rem)] -translate-x-1/2 sm:right-6 sm:left-auto sm:w-auto sm:translate-x-0">
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-full border border-border/50 bg-background/80 py-2 pr-2 pl-5 shadow-lg backdrop-blur">
