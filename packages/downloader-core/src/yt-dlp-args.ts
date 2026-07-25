@@ -54,6 +54,9 @@ const appendNetworkResilienceArgs = (args: string[]): void => {
   if (!args.includes('--concurrent-fragments') && !args.includes('-N')) {
     args.push('--concurrent-fragments', '4')
   }
+  if (!args.includes('--js-runtimes')) {
+    args.push('--js-runtimes', 'node')
+  }
 }
 
 const hasYouTubeHost = (host: string): boolean =>
