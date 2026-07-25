@@ -6,7 +6,7 @@ import { useAtom, useSetAtom } from 'jotai'
 import { ThemeProvider } from 'next-themes'
 import { lazy, Suspense, startTransition, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { HashRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
+import { HashRouter, useLocation, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { ErrorBoundary } from './components/error/ErrorBoundary'
 import { useDownloadEvents } from './hooks/use-download-events'
@@ -257,45 +257,32 @@ function AppContent() {
         <TitleBar platform={platform} />
 
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <Routes>
-            <Route
-              element={
-                <Home
-                  appVersion={appVersion}
-                  onOpenAbout={() => handlePageChange('about')}
-                  onOpenCookiesSettings={handleOpenCookiesSettings}
-                  onOpenSettings={() => handlePageChange('settings')}
-                  onOpenSupportedSites={handleOpenSupportedSites}
-                />
-              }
-              path="/"
+          <div className={currentPage === 'home' ? 'flex min-h-0 flex-1 flex-col' : 'hidden'}>
+            <Home
+              appVersion={appVersion}
+              onOpenAbout={() => handlePageChange('about')}
+              onOpenCookiesSettings={handleOpenCookiesSettings}
+              onOpenSettings={() => handlePageChange('settings')}
+              onOpenSupportedSites={handleOpenSupportedSites}
             />
-            <Route
-              element={
-                <Suspense fallback={null}>
-                  <Subscriptions />
-                </Suspense>
-              }
-              path="/subscriptions"
-            />
-            <Route
-              element={
-                <Suspense fallback={null}>
-                  <Settings />
-                </Suspense>
-              }
-              path="/settings"
-            />
-            <Route
-              element={
-                <Suspense fallback={null}>
-                  <About />
-                </Suspense>
-              }
-              path="/about"
-            />
-            <Route element={<Navigate replace to="/" />} path="*" />
-          </Routes>
+          </div>
+          <div
+            className={currentPage === 'subscriptions' ? 'flex min-h-0 flex-1 flex-col' : 'hidden'}
+          >
+            <Suspense fallback={null}>
+              <Subscriptions />
+            </Suspense>
+          </div>
+          <div className={currentPage === 'settings' ? 'flex min-h-0 flex-1 flex-col' : 'hidden'}>
+            <Suspense fallback={null}>
+              <Settings />
+            </Suspense>
+          </div>
+          <div className={currentPage === 'about' ? 'flex min-h-0 flex-1 flex-col' : 'hidden'}>
+            <Suspense fallback={null}>
+              <About />
+            </Suspense>
+          </div>
         </div>
       </main>
 
