@@ -241,3 +241,23 @@ export const activeDownloadsCountAtom = atom((get) => {
   }
   return count
 })
+
+export interface DownloadProgressState {
+  progress?: number
+  speed?: string
+  eta?: string
+  downloaded?: string
+  total?: string
+}
+
+export const downloadProgressMapAtom = atom<Map<string, DownloadProgressState>>(new Map())
+
+export const updateDownloadProgressAtom = atom(
+  null,
+  (get, set, payload: { id: string; progress?: number; speed?: string; eta?: string }) => {
+    const map = new Map(get(downloadProgressMapAtom))
+    const existing = map.get(payload.id) ?? {}
+    map.set(payload.id, { ...existing, ...payload })
+    set(downloadProgressMapAtom, map)
+  }
+)
