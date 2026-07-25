@@ -101,19 +101,23 @@ export class ThumbnailCache {
     basePath: string,
     defaultExtension: string
   ): Promise<string | null> {
-    for (const ext of SUPPORTED_EXTENSIONS) {
+    // Fast path: 95%+ of thumbnails match default extension derived from URL path
+    const primaryCandidate = `${basePath}${defaultExtension}`
+    if (await this.exists(primaryCandidate)) {
+      return primaryCandidate
+    }
+
+    // Fallback: Parallel check for remaining supported extensions
+    const otherExtensions = Array.from(SUPPORTED_EXTENSIONS).filter(
+      (ext) => ext !== defaultExtension
+    )
+    const checks = otherExtensions.map(async (ext) => {
       const candidate = `${basePath}${ext}`
-      if (await this.exists(candidate)) {
-        return candidate
-      }
-    }
+      return (await this.exists(candidate)) ? candidate : null
+    })
 
-    const fallback = `${basePath}${defaultExtension}`
-    if (await this.exists(fallback)) {
-      return fallback
-    }
-
-    return null
+    const results = await Promise.all(checks)
+    return results.find((path): path is string => path !== null) ?? null
   }
 
   private async exists(filePath: string): Promise<boolean> {
