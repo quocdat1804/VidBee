@@ -3,6 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { scopedLoggers } from '../utils/logger'
 import { resolveBundledResourcesPath } from './bundled-resources-path'
+import { getLocalFFmpegPath } from './ffmpeg-downloader'
 
 /**
  * Manage ffmpeg and ffprobe discovery for packaged and development builds.
@@ -89,23 +90,35 @@ class FfmpegManager {
     const ffmpegPath = path.join(bundledDir, ffmpegFileName)
     const ffprobePath = path.join(bundledDir, ffprobeFileName)
 
-    if (!(fs.existsSync(ffmpegPath) && fs.existsSync(ffprobePath))) {
-      throw new Error(
-        `Bundled ffmpeg/ffprobe not found in ${bundledDir}. Ensure they are packaged under resources/ffmpeg/.`
-      )
-    }
-
-    if (platform !== 'win32') {
-      try {
-        fs.chmodSync(ffmpegPath, 0o755)
-        fs.chmodSync(ffprobePath, 0o755)
-      } catch (error) {
-        scopedLoggers.engine.warn('Failed to set executable permission on bundled ffmpeg:', error)
+    if (fs.existsSync(ffmpegPath) && fs.existsSync(ffprobePath)) {
+      if (platform !== 'win32') {
+        try {
+          fs.chmodSync(ffmpegPath, 0o755)
+          fs.chmodSync(ffprobePath, 0o755)
+        } catch (error) {
+          scopedLoggers.engine.warn('Failed to set executable permission on bundled ffmpeg:', error)
+        }
       }
+      scopedLoggers.engine.info('Using bundled ffmpeg:', ffmpegPath)
+      return ffmpegPath
     }
 
-    scopedLoggers.engine.info('Using bundled ffmpeg:', ffmpegPath)
-    return ffmpegPath
+    const localPath = getLocalFFmpegPath()
+    if (fs.existsSync(localPath)) {
+      if (platform !== 'win32') {
+        try {
+          fs.chmodSync(localPath, 0o755)
+        } catch (error) {
+          scopedLoggers.engine.warn('Failed to set executable permission on local ffmpeg:', error)
+        }
+      }
+      scopedLoggers.engine.info('Using local ffmpeg:', localPath)
+      return localPath
+    }
+
+    throw new Error(
+      `ffmpeg/ffprobe not found in bundled resources (${bundledDir}) or local userData bin (${localPath}).`
+    )
   }
 }
 
