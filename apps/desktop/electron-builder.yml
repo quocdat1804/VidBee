@@ -26,8 +26,6 @@ extraResources:
     to: resources
     filter:
       - '**/*'
-      - '!deno*'
-      - '!ffmpeg/**'
   # NOTE: VidBee CLI is now distributed standalone via npm / brew / shell
   # installer (NEX-148). Desktop no longer bundles `@vidbee/cli` and no
   # longer ships a `vidbee` shim. Users install the CLI explicitly with
