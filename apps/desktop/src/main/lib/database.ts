@@ -29,6 +29,7 @@ export const getDatabaseConnection = (): DatabaseConnection => {
   const databasePath = getDatabaseFilePath()
   const sqlite = new DatabaseConstructor(databasePath, { timeout: 5000 })
   sqlite.pragma('journal_mode = WAL')
+  sqlite.pragma('synchronous = NORMAL')
   sqlite.pragma('foreign_keys = ON')
 
   const db = drizzle(sqlite)
