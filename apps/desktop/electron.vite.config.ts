@@ -77,7 +77,9 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@main': resolve('src/main'),
           '@renderer': resolve('src/renderer/src'),
-          '@shared': resolve('src/shared')
+          '@shared': resolve('src/shared'),
+          react: resolve(import.meta.dirname, 'node_modules/react'),
+          'react-dom': resolve(import.meta.dirname, 'node_modules/react-dom')
         }
       },
       optimizeDeps: {

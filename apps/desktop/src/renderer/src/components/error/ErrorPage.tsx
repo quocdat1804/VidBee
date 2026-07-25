@@ -6,7 +6,6 @@ import {
   CardHeader,
   CardTitle
 } from '@renderer/components/ui/card'
-import { ScrollArea } from '@renderer/components/ui/scroll-area'
 import { Textarea } from '@renderer/components/ui/textarea'
 import { logger } from '@renderer/lib/logger'
 import { AlertTriangle, Copy, Home, RefreshCw } from 'lucide-react'
@@ -110,21 +109,21 @@ export function ErrorPage({ errorInfo, onReload, onGoHome }: ErrorPageProps) {
             <div className="space-y-4">
               <div>
                 <p className="mb-2 font-medium text-sm">{t('error.stackTrace')}</p>
-                <ScrollArea className="h-48 rounded-md border bg-muted/50 p-4">
+                <div className="h-48 overflow-y-auto rounded-md border bg-muted/50 p-4">
                   <pre className="whitespace-pre-wrap break-words font-mono text-xs">
                     {errorInfo.error.stack || t('error.noStackTrace')}
                   </pre>
-                </ScrollArea>
+                </div>
               </div>
 
               {errorInfo.errorInfo?.componentStack && (
                 <div>
                   <p className="mb-2 font-medium text-sm">{t('error.componentStack')}</p>
-                  <ScrollArea className="h-32 rounded-md border bg-muted/50 p-4">
+                  <div className="h-32 overflow-y-auto rounded-md border bg-muted/50 p-4">
                     <pre className="whitespace-pre-wrap break-words font-mono text-xs">
                       {errorInfo.errorInfo.componentStack}
                     </pre>
-                  </ScrollArea>
+                  </div>
                 </div>
               )}
 
