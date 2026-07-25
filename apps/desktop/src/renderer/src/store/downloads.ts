@@ -114,6 +114,26 @@ export const addHistoryRecordAtom = atom(null, (get, set, item: DownloadHistoryI
   set(downloadRecordsAtom, downloads)
 })
 
+export const setHistoryRecordsAtom = atom(null, (get, set, items: DownloadHistoryItem[]) => {
+  const downloads = new Map(get(downloadRecordsAtom))
+  for (const [key, item] of downloads.entries()) {
+    if (item.entryType === 'history') {
+      downloads.delete(key)
+    }
+  }
+  for (const item of items) {
+    const activeKey = recordKey('active', item.id)
+    if (downloads.has(activeKey)) {
+      if (!isFinalStatus(item.status)) {
+        continue
+      }
+      downloads.delete(activeKey)
+    }
+    downloads.set(recordKey('history', item.id), toHistoryRecord(item))
+  }
+  set(downloadRecordsAtom, downloads)
+})
+
 export const removeHistoryRecordAtom = atom(null, (get, set, id: string) => {
   const downloads = new Map(get(downloadRecordsAtom))
   downloads.delete(recordKey('history', id))
