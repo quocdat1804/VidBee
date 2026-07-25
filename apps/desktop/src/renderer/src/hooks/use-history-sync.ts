@@ -1,5 +1,5 @@
 import { useSetAtom } from 'jotai'
-import { useEffect } from 'react'
+import { startTransition, useEffect } from 'react'
 import { ipcServices } from '../lib/ipc'
 import { setHistoryRecordsAtom } from '../store/downloads'
 
@@ -18,17 +18,23 @@ export function useHistorySync() {
       try {
         const historyData = await ipcServices.history.getHistory()
         if (!cancelled) {
-          setHistoryRecords(historyData)
-          hasLoadedInitialHistory = true
+          startTransition(() => {
+            setHistoryRecords(historyData)
+            hasLoadedInitialHistory = true
+          })
         }
       } catch (error) {
         console.error('Failed to load history:', error)
       }
     }
 
-    void loadHistory()
+    const timer = setTimeout(() => {
+      void loadHistory()
+    }, 0)
+
     return () => {
       cancelled = true
+      clearTimeout(timer)
     }
   }, [setHistoryRecords])
 }

@@ -4,7 +4,7 @@ import { TitleBar } from '@renderer/components/ui/title-bar'
 import type { SubscriptionRule } from '@shared/types'
 import { useAtom, useSetAtom } from 'jotai'
 import { ThemeProvider } from 'next-themes'
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, startTransition, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { HashRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
 import { toast } from 'sonner'
@@ -94,7 +94,9 @@ function AppContent() {
           page,
           targetPath
         })
-        navigate(targetPath)
+        startTransition(() => {
+          navigate(targetPath)
+        })
       }
     },
     [location.pathname, navigate]
