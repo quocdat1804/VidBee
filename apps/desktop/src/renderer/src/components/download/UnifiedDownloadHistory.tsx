@@ -468,11 +468,15 @@ export function UnifiedDownloadHistory({
     overscan: 5
   })
 
+  const prevStatusFilterRef = useRef(statusFilter)
   useEffect(() => {
-    if (scrollParentRef.current) {
-      scrollParentRef.current.scrollTop = 0
+    if (prevStatusFilterRef.current !== statusFilter) {
+      prevStatusFilterRef.current = statusFilter
+      if (scrollParentRef.current) {
+        scrollParentRef.current.scrollTop = 0
+      }
+      rowVirtualizer.scrollToOffset(0)
     }
-    rowVirtualizer.scrollToOffset(0)
     rowVirtualizer.measure()
   }, [statusFilter, rowVirtualizer])
 
@@ -484,6 +488,12 @@ export function UnifiedDownloadHistory({
     }, 150)
   }, [])
 
+  const handlePlaylistExpandToggle = useCallback(() => {
+    requestAnimationFrame(() => {
+      rowVirtualizer.measure()
+    })
+  }, [rowVirtualizer])
+
   const renderPlaylistGroup = useCallback(
     (groupId: string) => {
       const group = groupedView.groups.get(groupId)
@@ -494,6 +504,7 @@ export function UnifiedDownloadHistory({
         <PlaylistDownloadGroup
           groupId={group.id}
           onDeletePlaylist={handleRequestDeletePlaylist}
+          onToggleExpand={handlePlaylistExpandToggle}
           onToggleSelect={handleToggleSelect}
           records={group.records}
           selectedIds={selectedIds}
@@ -502,7 +513,13 @@ export function UnifiedDownloadHistory({
         />
       )
     },
-    [groupedView.groups, handleRequestDeletePlaylist, handleToggleSelect, selectedIds]
+    [
+      groupedView.groups,
+      handlePlaylistExpandToggle,
+      handleRequestDeletePlaylist,
+      handleToggleSelect,
+      selectedIds
+    ]
   )
 
   useEffect(() => {

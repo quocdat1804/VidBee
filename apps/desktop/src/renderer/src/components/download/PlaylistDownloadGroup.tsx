@@ -14,6 +14,7 @@ interface PlaylistDownloadGroupProps {
   selectedIds?: Set<string>
   onToggleSelect?: (id: string) => void
   onDeletePlaylist?: (playlistId: string, title: string, ids: string[]) => void
+  onToggleExpand?: () => void
 }
 
 const STORAGE_KEY_PREFIX = 'playlist_expanded_'
@@ -47,7 +48,8 @@ export function PlaylistDownloadGroup({
   totalCount,
   selectedIds,
   onToggleSelect,
-  onDeletePlaylist
+  onDeletePlaylist,
+  onToggleExpand
 }: PlaylistDownloadGroupProps) {
   const { t } = useTranslation()
   const [isExpanded, setIsExpanded] = useState(() => loadExpandedState(groupId))
@@ -55,6 +57,14 @@ export function PlaylistDownloadGroup({
   useEffect(() => {
     saveExpandedState(groupId, isExpanded)
   }, [groupId, isExpanded])
+
+  const handleToggle = () => {
+    setIsExpanded((prev) => {
+      const next = !prev
+      onToggleExpand?.()
+      return next
+    })
+  }
 
   const completedCount = records.filter((record) => record.status === 'completed').length
   const errorCount = records.filter((record) => record.status === 'error').length
@@ -84,7 +94,7 @@ export function PlaylistDownloadGroup({
           aria-expanded={isExpanded}
           aria-label={toggleLabel}
           className="flex min-w-0 flex-1 items-center gap-2 rounded-md p-1.5 px-3 transition-colors hover:bg-muted/40 active:bg-muted/60"
-          onClick={() => setIsExpanded((prev) => !prev)}
+          onClick={handleToggle}
           title={toggleLabel}
           type="button"
         >
