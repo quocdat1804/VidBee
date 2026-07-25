@@ -70,31 +70,7 @@ export default defineConfig(({ mode }) => {
       base: './',
       define,
       build: {
-        sourcemap: true,
-        rollupOptions: {
-          output: {
-            manualChunks(id) {
-              if (id.includes('node_modules')) {
-                if (
-                  /\/node_modules\/react\//.test(id) ||
-                  /\/node_modules\/react-dom\//.test(id) ||
-                  /\/node_modules\/react-router\//.test(id) ||
-                  /\/node_modules\/jotai\//.test(id)
-                ) {
-                  return 'vendor-react'
-                }
-                if (
-                  id.includes('/@radix-ui/') ||
-                  id.includes('/lucide-react/') ||
-                  id.includes('/sonner/')
-                ) {
-                  return 'vendor-ui'
-                }
-              }
-              return undefined
-            }
-          }
-        }
+        sourcemap: true
       },
       resolve: {
         alias: {
