@@ -71,7 +71,7 @@
     "@vidbee/downloader-core": "workspace:*",
     "@vidbee/task-queue": "workspace:*",
     "esbuild": "^0.25.0",
-    "typescript": "^5.9.2",
+    "typescript": "^7.0.2",
     "vitest": "^3.2.4"
   },
   "engines": {
