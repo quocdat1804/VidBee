@@ -73,11 +73,24 @@ export default defineConfig(({ mode }) => {
         sourcemap: true
       },
       resolve: {
+        dedupe: ['react', 'react-dom', 'react-router', 'jotai'],
         alias: {
           '@main': resolve('src/main'),
           '@renderer': resolve('src/renderer/src'),
           '@shared': resolve('src/shared')
         }
+      },
+      optimizeDeps: {
+        include: [
+          'react',
+          'react-dom',
+          'react-router',
+          'jotai',
+          '@radix-ui/react-scroll-area',
+          '@radix-ui/react-dialog',
+          '@radix-ui/react-tooltip',
+          'sonner'
+        ]
       },
       plugins: [
         react(),
