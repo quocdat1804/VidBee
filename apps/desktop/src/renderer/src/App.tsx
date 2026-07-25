@@ -4,7 +4,7 @@ import { TitleBar } from '@renderer/components/ui/title-bar'
 import type { SubscriptionRule } from '@shared/types'
 import { useAtom, useSetAtom } from 'jotai'
 import { ThemeProvider } from 'next-themes'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { HashRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
 import { toast } from 'sonner'
@@ -15,10 +15,14 @@ import { useRybbitScript } from './hooks/use-rybbit-script'
 import { addRendererBreadcrumb, setRendererTelemetryEnabled } from './lib/glitchtip'
 import { ipcEvents, ipcServices } from './lib/ipc'
 import { withDesktopUtm } from './lib/url'
-import { About } from './pages/About'
 import { Home } from './pages/Home'
-import { Settings } from './pages/Settings'
-import { Subscriptions } from './pages/Subscriptions'
+
+const About = lazy(() => import('./pages/About').then((m) => ({ default: m.About })))
+const Settings = lazy(() => import('./pages/Settings').then((m) => ({ default: m.Settings })))
+const Subscriptions = lazy(() =>
+  import('./pages/Subscriptions').then((m) => ({ default: m.Subscriptions }))
+)
+
 import { loadSettingsAtom, settingsAtom } from './store/settings'
 import { loadSubscriptionsAtom, setSubscriptionsAtom } from './store/subscriptions'
 import { updateAvailableAtom, updateReadyAtom } from './store/update'
@@ -66,7 +70,6 @@ function AppContent() {
   const location = useLocation()
   const currentPage = pathToPage(location.pathname)
   const supportedSitesUrl = withDesktopUtm('https://vidbee.org/supported-sites/')
-  const toolsUrl = withDesktopUtm('https://vidbee.org/tools/')
   const analyticsEnabled = settings.enableAnalytics ?? true
   const isRybbitReady = useRybbitScript(analyticsEnabled)
 
@@ -103,10 +106,6 @@ function AppContent() {
 
   const handleOpenSupportedSites = () => {
     window.open(supportedSitesUrl, '_blank')
-  }
-
-  const handleOpenTools = () => {
-    window.open(toolsUrl, '_blank')
   }
 
   useEffect(() => {
@@ -248,12 +247,7 @@ function AppContent() {
   return (
     <div className="flex h-screen flex-row">
       {/* Sidebar Navigation */}
-      <Sidebar
-        currentPage={currentPage}
-        onOpenSupportedSites={handleOpenSupportedSites}
-        onOpenTools={handleOpenTools}
-        onPageChange={handlePageChange}
-      />
+      <Sidebar currentPage={currentPage} onPageChange={handlePageChange} />
 
       {/* Main Content */}
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background">
@@ -274,9 +268,30 @@ function AppContent() {
               }
               path="/"
             />
-            <Route element={<Subscriptions />} path="/subscriptions" />
-            <Route element={<Settings />} path="/settings" />
-            <Route element={<About />} path="/about" />
+            <Route
+              element={
+                <Suspense fallback={null}>
+                  <Subscriptions />
+                </Suspense>
+              }
+              path="/subscriptions"
+            />
+            <Route
+              element={
+                <Suspense fallback={null}>
+                  <Settings />
+                </Suspense>
+              }
+              path="/settings"
+            />
+            <Route
+              element={
+                <Suspense fallback={null}>
+                  <About />
+                </Suspense>
+              }
+              path="/about"
+            />
             <Route element={<Navigate replace to="/" />} path="*" />
           </Routes>
         </div>
