@@ -10,13 +10,14 @@ import {
   DialogTitle
 } from '@renderer/components/ui/dialog'
 import { cn } from '@renderer/lib/utils'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { DownloadEmptyState } from '@vidbee/ui/components/ui/download-empty-state'
 import {
   DownloadFilterBar,
   type DownloadFilterItem
 } from '@vidbee/ui/components/ui/download-filter-bar'
 import { useAtomValue, useSetAtom } from 'jotai'
-import { type ReactNode, useCallback, useEffect, useId, useMemo, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import {
@@ -414,6 +415,15 @@ export function UnifiedDownloadHistory({
     return { order, groups }
   }, [filteredRecords])
 
+  const scrollParentRef = useRef<HTMLDivElement>(null)
+
+  const rowVirtualizer = useVirtualizer({
+    count: groupedView.order.length,
+    getScrollElement: () => scrollParentRef.current,
+    estimateSize: () => 110,
+    overscan: 5
+  })
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.defaultPrevented) {
@@ -464,7 +474,7 @@ export function UnifiedDownloadHistory({
           onFilterChange={setStatusFilter}
         />
       </CardHeader>
-      <ScrollArea className="flex-1 overflow-y-auto">
+      <ScrollArea className="flex-1 overflow-y-auto" ref={scrollParentRef}>
         <CardContent className="w-full space-y-3 overflow-x-hidden p-0">
           {topContent}
           {showCookiesTip && (
@@ -506,35 +516,61 @@ export function UnifiedDownloadHistory({
           {filteredRecords.length === 0 ? (
             <DownloadEmptyState message={t('download.noItems')} />
           ) : (
-            <div className="w-full pb-4">
-              {groupedView.order.map((item) => {
-                if (item.type === 'single') {
-                  return (
-                    <DownloadItem
-                      download={item.record}
-                      isSelected={selectedIds.has(item.record.id)}
-                      key={`${item.record.entryType}:${item.record.id}`}
-                      onToggleSelect={handleToggleSelect}
-                    />
-                  )
-                }
-
-                const group = groupedView.groups.get(item.id)
-                if (!group) {
+            <div
+              className="relative w-full pb-4"
+              style={{
+                height: `${rowVirtualizer.getTotalSize()}px`
+              }}
+            >
+              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                const item = groupedView.order[virtualRow.index]
+                if (!item) {
                   return null
                 }
+                const key =
+                  item.type === 'single'
+                    ? `${item.record.entryType}:${item.record.id}`
+                    : `group:${item.id}`
 
                 return (
-                  <PlaylistDownloadGroup
-                    groupId={group.id}
-                    key={`group:${group.id}`}
-                    onDeletePlaylist={handleRequestDeletePlaylist}
-                    onToggleSelect={handleToggleSelect}
-                    records={group.records}
-                    selectedIds={selectedIds}
-                    title={group.title}
-                    totalCount={group.totalCount}
-                  />
+                  <div
+                    data-index={virtualRow.index}
+                    key={key}
+                    ref={rowVirtualizer.measureElement}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      transform: `translateY(${virtualRow.start}px)`
+                    }}
+                  >
+                    {item.type === 'single' ? (
+                      <DownloadItem
+                        download={item.record}
+                        isSelected={selectedIds.has(item.record.id)}
+                        onToggleSelect={handleToggleSelect}
+                      />
+                    ) : (
+                      (() => {
+                        const group = groupedView.groups.get(item.id)
+                        if (!group) {
+                          return null
+                        }
+                        return (
+                          <PlaylistDownloadGroup
+                            groupId={group.id}
+                            onDeletePlaylist={handleRequestDeletePlaylist}
+                            onToggleSelect={handleToggleSelect}
+                            records={group.records}
+                            selectedIds={selectedIds}
+                            title={group.title}
+                            totalCount={group.totalCount}
+                          />
+                        )
+                      })()
+                    )}
+                  </div>
                 )
               })}
             </div>

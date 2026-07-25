@@ -56,6 +56,7 @@
     "@svgr/core": "^8.1.0",
     "@svgr/plugin-jsx": "^8.1.0",
     "@tailwindcss/vite": "^4.1.13",
+    "@tanstack/react-virtual": "^3.14.8",
     "@vidbee/db": "workspace:*",
     "@vidbee/downloader-core": "workspace:*",
     "@vidbee/i18n": "workspace:*",
