@@ -137,7 +137,17 @@ export function UnifiedDownloadHistory({
   const allRecords = useAtomValue(downloadsArrayAtom)
   const isHistoryLoading = useAtomValue(isHistoryLoadingAtom)
   const hasLoadedHistory = useAtomValue(hasLoadedHistoryAtom)
-  const showSkeleton = isHistoryLoading || (!hasLoadedHistory && allRecords.length === 0)
+  const [isTransitionLoading, setIsTransitionLoading] = useState(false)
+  const showSkeleton =
+    isHistoryLoading || isTransitionLoading || (!hasLoadedHistory && allRecords.length === 0)
+
+  useEffect(() => {
+    setIsTransitionLoading(true)
+    const timer = setTimeout(() => {
+      setIsTransitionLoading(false)
+    }, 150)
+    return () => clearTimeout(timer)
+  }, [])
   const downloadStats = useAtomValue(downloadStatsAtom)
   const removeHistoryRecords = useSetAtom(removeHistoryRecordsAtom)
   const removeHistoryRecordsByPlaylist = useSetAtom(removeHistoryRecordsByPlaylistAtom)
@@ -465,11 +475,15 @@ export function UnifiedDownloadHistory({
   const handleFilterChange = useCallback(
     (filter: StatusFilter) => {
       setStatusFilter(filter)
+      setIsTransitionLoading(true)
       if (scrollParentRef.current) {
         scrollParentRef.current.scrollTop = 0
       }
       rowVirtualizer.scrollToOffset(0)
       rowVirtualizer.measure()
+      setTimeout(() => {
+        setIsTransitionLoading(false)
+      }, 150)
     },
     [rowVirtualizer]
   )
