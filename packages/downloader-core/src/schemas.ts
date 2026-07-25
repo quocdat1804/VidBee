@@ -241,7 +241,8 @@ export const PlaylistDownloadInputSchema = z.object({
   startIndex: z.number().int().positive().optional(),
   endIndex: z.number().int().positive().optional(),
   containerFormat: OneClickContainerOptionSchema.optional(),
-  settings: DownloadRuntimeSettingsSchema.optional()
+  settings: DownloadRuntimeSettingsSchema.optional(),
+  createSubfolder: z.boolean().optional()
 })
 
 export const PlaylistDownloadEntrySchema = z.object({

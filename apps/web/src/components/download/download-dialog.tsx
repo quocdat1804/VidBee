@@ -97,6 +97,7 @@ export function DownloadDialog({ onDownloadsChanged }: DownloadDialogProps) {
 
 	const downloadTypeId = useId();
 	const advancedOptionsId = useId();
+	const playlistCreateSubfolderId = useId();
 	const [playlistUrl, setPlaylistUrl] = useState("");
 	const [downloadType, setDownloadType] = useState<"video" | "audio">("video");
 	const [startIndex, setStartIndex] = useState("1");
@@ -112,6 +113,7 @@ export function DownloadDialog({ onDownloadsChanged }: DownloadDialogProps) {
 	const [selectedEntryIds, setSelectedEntryIds] = useState<Set<string>>(
 		new Set(),
 	);
+	const [createSubfolder, setCreateSubfolder] = useState(true);
 	const lockDialogHeight =
 		activeTab === "playlist" &&
 		(playlistPreviewLoading || playlistInfo !== null);
@@ -456,6 +458,7 @@ export function DownloadDialog({ onDownloadsChanged }: DownloadDialogProps) {
 				entryIds,
 				containerFormat,
 				settings: readOrpcDownloadSettings(),
+				createSubfolder,
 			});
 
 			if (result.result.totalCount === 0) {
@@ -480,6 +483,7 @@ export function DownloadDialog({ onDownloadsChanged }: DownloadDialogProps) {
 		settings,
 		notifyDownloadsChanged,
 		t,
+		createSubfolder,
 	]);
 
 	useEffect(() => {
@@ -570,6 +574,7 @@ export function DownloadDialog({ onDownloadsChanged }: DownloadDialogProps) {
 			setStartIndex("1");
 			setEndIndex("");
 			setSelectedEntryIds(new Set());
+			setCreateSubfolder(true);
 		}
 	}, [open]);
 
@@ -635,6 +640,26 @@ export function DownloadDialog({ onDownloadsChanged }: DownloadDialogProps) {
 										htmlFor={advancedOptionsId}
 									>
 										{t("advancedOptions.title")}
+									</Label>
+								</div>
+							)}
+
+						{activeTab === "playlist" &&
+							playlistInfo &&
+							!playlistPreviewLoading && (
+								<div className="flex items-center gap-2">
+									<Checkbox
+										checked={createSubfolder}
+										id={playlistCreateSubfolderId}
+										onCheckedChange={(checked) => {
+											setCreateSubfolder(checked === true);
+										}}
+									/>
+									<Label
+										className="cursor-pointer text-xs text-muted-foreground"
+										htmlFor={playlistCreateSubfolderId}
+									>
+										{t("playlist.createSubfolder")}
 									</Label>
 								</div>
 							)}

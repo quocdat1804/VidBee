@@ -16,7 +16,7 @@ import {
   type DownloadFilterItem
 } from '@vidbee/ui/components/ui/download-filter-bar'
 import { useAtomValue, useSetAtom } from 'jotai'
-import { type ReactNode, useEffect, useId, useMemo, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useId, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import {
@@ -216,7 +216,7 @@ export function UnifiedDownloadHistory({
     })
   }, [historyRecords, selectedIds.size])
 
-  const handleToggleSelect = (id: string) => {
+  const handleToggleSelect = useCallback((id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev)
       if (next.has(id)) {
@@ -226,7 +226,7 @@ export function UnifiedDownloadHistory({
       }
       return next
     })
-  }
+  }, [])
 
   const handleClearSelection = () => {
     setSelectedIds(new Set())

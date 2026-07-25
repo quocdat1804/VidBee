@@ -62,7 +62,11 @@
       "license": "Licence",
       "licenseDescription": "Consultez les termes de la licence open-source.",
       "website": "Site web officiel",
-      "websiteDescription": "Points forts du produit, feuille de route et actualités de la communauté."
+      "websiteDescription": "Points forts du produit, feuille de route et actualités de la communauté.",
+      "supportedSites": "Sites pris en charge",
+      "supportedSitesDescription": "Afficher la liste des plateformes vidéo prises en charge.",
+      "tools": "Outils",
+      "toolsDescription": "Options avancées du téléchargeur et outils d'aide."
     },
     "resourcesDescription": "Liens utiles pour en savoir plus sur VidBee et rester connecté.",
     "resourcesTitle": "Ressources",
@@ -388,7 +392,8 @@
     "title": "Télécharger la Playlist",
     "totalVideos": "Nombre total de vidéos : {{count}}",
     "untitled": "Liste de lecture sans titre",
-    "fetchingInfo": "Récupération des informations de la playlist..."
+    "fetchingInfo": "Récupération des informations de la playlist...",
+    "createSubfolder": "Créer un sous-dossier pour la playlist"
   },
   "settings": {
     "aboutTab": "À propos",

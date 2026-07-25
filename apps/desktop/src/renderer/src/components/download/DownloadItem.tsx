@@ -37,7 +37,7 @@ import {
   Trash2,
   X
 } from 'lucide-react'
-import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { memo, type ReactNode, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import {
@@ -209,7 +209,11 @@ const formatDateShort = (timestamp?: number) => {
   })
 }
 
-export function DownloadItem({ download, isSelected = false, onToggleSelect }: DownloadItemProps) {
+export const DownloadItem = memo(function DownloadItem({
+  download,
+  isSelected = false,
+  onToggleSelect
+}: DownloadItemProps) {
   const { t } = useTranslation()
   const appInfo = useAppInfo()
   const settings = useAtomValue(settingsAtom)
@@ -1398,4 +1402,4 @@ export function DownloadItem({ download, isSelected = false, onToggleSelect }: D
       </ContextMenuContent>
     </ContextMenu>
   )
-}
+})

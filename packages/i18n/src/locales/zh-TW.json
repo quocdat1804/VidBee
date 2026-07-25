@@ -62,7 +62,11 @@
       "license": "授權條款",
       "licenseDescription": "查閱開源授權條款。",
       "website": "官方網站",
-      "websiteDescription": "產品亮點、路線圖與社群動態。"
+      "websiteDescription": "產品亮點、路線圖與社群動態。",
+      "supportedSites": "支持的網站",
+      "supportedSitesDescription": "查看支持的視頻託管平台列表。",
+      "tools": "工具",
+      "toolsDescription": "高級下載器選項、Cookie 提取和輔助工具。"
     },
     "resourcesDescription": "了解 VidBee 並保持關注的實用連結。",
     "resourcesTitle": "資源",
@@ -388,7 +392,8 @@
     "title": "下載播放清單",
     "totalVideos": "視頻總數：{{count}}",
     "untitled": "無標題播放列表",
-    "fetchingInfo": "正在取得播放清單資訊..."
+    "fetchingInfo": "正在取得播放清單資訊...",
+    "createSubfolder": "為播放列表創建子文件夾"
   },
   "settings": {
     "aboutTab": "關於",

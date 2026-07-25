@@ -34,7 +34,7 @@ const YOUTUBE_HOST_SUFFIXES = ['youtube.com', 'youtu.be', 'youtube-nocookie.com'
 // token and frequently 403s) but keep `web_safari` and the other defaults so
 // extraction has more fallbacks before failing.
 const YOUTUBE_SAFE_PLAYER_CLIENTS = 'default,-web'
-const DEFAULT_FILENAME_TEMPLATE = '%(title)s via VidBee.%(ext)s'
+const DEFAULT_FILENAME_TEMPLATE = '%(title)s.%(ext)s'
 const WINDOWS_FILENAME_TRIM_LENGTH = '120'
 
 // GitHub issues #326, #355, #325: yt-dlp's default of 10 retries and no

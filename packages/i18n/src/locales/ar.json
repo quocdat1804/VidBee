@@ -62,7 +62,11 @@
       "license": "الترخيص",
       "licenseDescription": "راجع شروط ترخيص المصدر المفتوح.",
       "website": "الموقع الرسمي",
-      "websiteDescription": "أبرز المنتجات، خارطة الطريق، وأخبار المجتمع."
+      "websiteDescription": "أبرز المنتجات، خارطة الطريق، وأخبار المجتمع.",
+      "supportedSites": "المواقع المدعومة",
+      "supportedSitesDescription": "عرض قائمة منصات استضافة الفيديو المدعومة.",
+      "tools": "الأدوات",
+      "toolsDescription": "خيارات التنزيل المتقدمة والأدوات المساعدة."
     },
     "resourcesDescription": "روابط مفيدة لمعرفة المزيد عن VidBee والبقاء على اتصال.",
     "resourcesTitle": "الموارد",
@@ -388,7 +392,8 @@
     "title": "تحميل قائمة التشغيل",
     "totalVideos": "إجمالي الفيديوهات: {{count}}",
     "untitled": "قائمة تشغيل بدون عنوان",
-    "fetchingInfo": "جارٍ جلب معلومات قائمة التشغيل..."
+    "fetchingInfo": "جارٍ جلب معلومات قائمة التشغيل...",
+    "createSubfolder": "إنشاء مجلد فرعي لقائمة التشغيل"
   },
   "settings": {
     "aboutTab": "حول",

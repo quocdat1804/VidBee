@@ -217,6 +217,7 @@ export interface PlaylistDownloadOptions {
   folderFormat?: string
   customDownloadPath?: string
   containerFormat?: OneClickContainerOption
+  createSubfolder?: boolean
 }
 
 export interface PlaylistDownloadEntry {

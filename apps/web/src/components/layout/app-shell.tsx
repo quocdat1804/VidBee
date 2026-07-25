@@ -18,14 +18,6 @@ export const AppShell = ({ children, page }: AppShellProps) => {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 
-	const openSupportedSites = () => {
-		window.open(
-			"https://vidbee.org/supported-sites/",
-			"_blank",
-			"noopener,noreferrer",
-		);
-	};
-
 	const items: AppSidebarItem[] = [
 		{
 			id: "home",
@@ -41,12 +33,6 @@ export const AppShell = ({ children, page }: AppShellProps) => {
 			disabled: true,
 			icon: appSidebarIcons.subscriptions,
 			label: t("menu.rss"),
-		},
-		{
-			id: "supported-sites",
-			icon: appSidebarIcons.supportedSites,
-			label: t("menu.supportedSites"),
-			onClick: openSupportedSites,
 		},
 	];
 

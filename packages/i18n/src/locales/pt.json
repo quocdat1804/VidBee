@@ -62,7 +62,11 @@
       "license": "Licença",
       "licenseDescription": "Revise os termos da licença de código aberto.",
       "website": "Site oficial",
-      "websiteDescription": "Destaques do produto, roadmap e notícias da comunidade."
+      "websiteDescription": "Destaques do produto, roadmap e notícias da comunidade.",
+      "supportedSites": "Sites suportados",
+      "supportedSitesDescription": "Ver a lista de plataformas de vídeo suportadas.",
+      "tools": "Ferramentas",
+      "toolsDescription": "Opções avançadas do downloader e ferramentas auxiliares."
     },
     "resourcesDescription": "Links úteis para aprender mais sobre VidBee e manter-se conectado.",
     "resourcesTitle": "Recursos",
@@ -388,7 +392,8 @@
     "title": "Baixar Playlist",
     "totalVideos": "Total de vídeos: {{count}}",
     "untitled": "Playlist sem título",
-    "fetchingInfo": "Buscando informações da playlist..."
+    "fetchingInfo": "Buscando informações da playlist...",
+    "createSubfolder": "Criar subpasta para playlist"
   },
   "settings": {
     "aboutTab": "Sobre",

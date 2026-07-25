@@ -10,16 +10,9 @@ type Page = 'home' | 'subscriptions' | 'settings' | 'about'
 interface SidebarProps {
   currentPage: Page
   onPageChange: (page: Page) => void
-  onOpenSupportedSites: () => void
-  onOpenTools: () => void
 }
 
-export function Sidebar({
-  currentPage,
-  onPageChange,
-  onOpenSupportedSites,
-  onOpenTools
-}: SidebarProps) {
+export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
   const { t } = useTranslation()
   const updateAvailable = useAtomValue(updateAvailableAtom)
 
@@ -37,18 +30,6 @@ export function Sidebar({
       icon: appSidebarIcons.subscriptions,
       label: t('menu.rss'),
       onClick: () => onPageChange('subscriptions')
-    },
-    {
-      id: 'supported-sites',
-      icon: appSidebarIcons.supportedSites,
-      label: t('menu.supportedSites'),
-      onClick: onOpenSupportedSites
-    },
-    {
-      id: 'tools',
-      icon: appSidebarIcons.tools,
-      label: t('menu.tools'),
-      onClick: onOpenTools
     }
   ]
 

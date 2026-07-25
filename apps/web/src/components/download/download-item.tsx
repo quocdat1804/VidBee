@@ -50,6 +50,7 @@ import {
 import {
 	type KeyboardEvent,
 	type ReactNode,
+	memo,
 	useEffect,
 	useRef,
 	useState,
@@ -226,7 +227,7 @@ const resolveDownloadExtension = (download: DownloadRecord): string => {
 	return download.type === "audio" ? "mp3" : "mp4";
 };
 
-export function DownloadItem({
+export const DownloadItem = memo(function DownloadItem({
 	download,
 	isSelected = false,
 	onToggleSelect,
@@ -1216,4 +1217,4 @@ export function DownloadItem({
 			</ContextMenuContent>
 		</ContextMenu>
 	);
-}
+});

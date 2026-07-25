@@ -131,6 +131,7 @@ export function DownloadDialog({
   const playlistBusy = playlistPreviewLoading || playlistDownloadLoading
   const [advancedOptionsOpen, setAdvancedOptionsOpen] = useState(false)
   const [selectedEntryIds, setSelectedEntryIds] = useState<Set<string>>(new Set())
+  const [createSubfolder, setCreateSubfolder] = useState(true)
   const lockDialogHeight =
     activeTab === 'playlist' && (playlistPreviewLoading || playlistInfo !== null)
 
@@ -572,7 +573,8 @@ export function DownloadDialog({
         endIndex,
         entryIds,
         customDownloadPath: playlistCustomDownloadPath.trim() || undefined,
-        containerFormat
+        containerFormat,
+        createSubfolder
       })
 
       if (result.totalCount === 0) {
@@ -614,7 +616,8 @@ export function DownloadDialog({
     addDownload,
     t,
     playlistCustomDownloadPath,
-    selectedEntryIds
+    selectedEntryIds,
+    createSubfolder
   ])
 
   // Update single video title when videoInfo changes
@@ -741,6 +744,7 @@ export function DownloadDialog({
       setStartIndex('1')
       setEndIndex('')
       setSelectedEntryIds(new Set())
+      setCreateSubfolder(true)
     }
   }, [open, clearVideoInfo])
 
@@ -860,38 +864,55 @@ export function DownloadDialog({
 
             {/* Download Location - Playlist */}
             {activeTab === 'playlist' && playlistInfo && !playlistPreviewLoading && (
-              <div className="flex items-center gap-2">
-                <div className="relative w-[200px]">
-                  <Input
-                    className="h-8 bg-muted/30 pr-7 text-xs"
-                    placeholder={t('download.autoFolderPlaceholder')}
-                    readOnly
-                    value={playlistCustomDownloadPath || settings.downloadPath}
-                  />
-                  <div className="absolute top-1/2 right-2 -translate-y-1/2">
-                    <FolderOpen className="h-3 w-3 text-muted-foreground" />
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center gap-2">
+                  <div className="relative w-[200px]">
+                    <Input
+                      className="h-8 bg-muted/30 pr-7 text-xs"
+                      placeholder={t('download.autoFolderPlaceholder')}
+                      readOnly
+                      value={playlistCustomDownloadPath || settings.downloadPath}
+                    />
+                    <div className="absolute top-1/2 right-2 -translate-y-1/2">
+                      <FolderOpen className="h-3 w-3 text-muted-foreground" />
+                    </div>
                   </div>
-                </div>
-                <Button
-                  className="h-8"
-                  disabled={playlistBusy}
-                  onClick={handleSelectPlaylistDirectory}
-                  size="sm"
-                  variant="outline"
-                >
-                  {t('settings.selectPath')}
-                </Button>
-                {playlistCustomDownloadPath && (
                   <Button
-                    className="h-8 text-xs"
+                    className="h-8"
                     disabled={playlistBusy}
-                    onClick={() => setPlaylistCustomDownloadPath('')}
+                    onClick={handleSelectPlaylistDirectory}
                     size="sm"
-                    variant="ghost"
+                    variant="outline"
                   >
-                    {t('download.useAutoFolder')}
+                    {t('settings.selectPath')}
                   </Button>
-                )}
+                  {playlistCustomDownloadPath && (
+                    <Button
+                      className="h-8 text-xs"
+                      disabled={playlistBusy}
+                      onClick={() => setPlaylistCustomDownloadPath('')}
+                      size="sm"
+                      variant="ghost"
+                    >
+                      {t('download.useAutoFolder')}
+                    </Button>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    checked={createSubfolder}
+                    id="playlist-create-subfolder-checkbox"
+                    onCheckedChange={(checked) => {
+                      setCreateSubfolder(checked === true)
+                    }}
+                  />
+                  <Label
+                    className="cursor-pointer text-muted-foreground text-xs"
+                    htmlFor="playlist-create-subfolder-checkbox"
+                  >
+                    {t('playlist.createSubfolder')}
+                  </Label>
+                </div>
               </div>
             )}
 

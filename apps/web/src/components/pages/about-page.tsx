@@ -14,10 +14,12 @@ import {
 	Facebook,
 	FileText,
 	Github,
+	Globe,
 	Link as LinkIcon,
 	MessageSquare,
 	RefreshCw,
 	Twitter,
+	Wrench,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -190,6 +192,20 @@ export const AboutPage = () => {
 				description: t("about.resources.websiteDescription"),
 				actionLabel: t("about.actions.visit"),
 				href: "https://vidbee.org/",
+			},
+			{
+				icon: Globe,
+				label: t("about.resources.supportedSites"),
+				description: t("about.resources.supportedSitesDescription"),
+				actionLabel: t("about.actions.visit"),
+				href: "https://vidbee.org/supported-sites/",
+			},
+			{
+				icon: Wrench,
+				label: t("about.resources.tools"),
+				description: t("about.resources.toolsDescription"),
+				actionLabel: t("about.actions.visit"),
+				href: "https://vidbee.org/tools/",
 			},
 			{
 				icon: FileText,

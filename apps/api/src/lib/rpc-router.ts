@@ -10,7 +10,7 @@ import type { DownloadTask } from '@vidbee/downloader-core'
 import type { Task, TaskStatus } from '@vidbee/task-queue'
 
 import { projectTaskForApi } from './projection'
-import { taskQueue, taskQueueExecutor } from './downloader'
+import { taskQueue, taskQueueExecutor, downloadDir } from './downloader'
 import { webSettingsStore } from './web-settings-store'
 import { fetchPlaylistInfo, fetchVideoInfo } from './yt-dlp-info'
 
@@ -306,6 +306,14 @@ export const rpcRouter = os.router({
           index: number
         }> = []
 
+        const apiSettings = await webSettingsStore.get()
+        const defaultPath = apiSettings.downloadPath.trim() || downloadDir
+        const resolvedDownloadPath =
+          input.customDownloadPath?.trim() ||
+          (input.createSubfolder === false
+            ? defaultPath
+            : path.join(defaultPath, 'Playlists', sanitizeUploadedFileName(playlist.title, 'Playlist')))
+
         for (const entry of selected) {
           const result = await taskQueue.add({
             input: {
@@ -320,7 +328,7 @@ export const rpcRouter = os.router({
                 format: input.format,
                 audioFormat: input.audioFormat,
                 audioFormatIds: input.audioFormatIds,
-                customDownloadPath: input.customDownloadPath,
+                customDownloadPath: resolvedDownloadPath,
                 customFilenameTemplate: input.customFilenameTemplate,
                 containerFormat: input.containerFormat,
                 settings: input.settings,

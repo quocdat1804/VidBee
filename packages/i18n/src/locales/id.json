@@ -62,7 +62,11 @@
       "license": "Lisensi",
       "licenseDescription": "Tinjau ketentuan lisensi open-source.",
       "website": "Situs web resmi",
-      "websiteDescription": "Sorotan produk, roadmap, dan berita komunitas."
+      "websiteDescription": "Sorotan produk, roadmap, dan berita komunitas.",
+      "supportedSites": "Situs yang didukung",
+      "supportedSitesDescription": "Lihat daftar platform hosting video yang didukung.",
+      "tools": "Alat",
+      "toolsDescription": "Opsi pengunduh lanjutan dan alat bantu."
     },
     "resourcesDescription": "Tautan berguna untuk mempelajari lebih lanjut tentang VidBee dan tetap terhubung.",
     "resourcesTitle": "Sumber Daya",
@@ -388,7 +392,8 @@
     "title": "Unduh Playlist",
     "totalVideos": "Total video: {{count}}",
     "untitled": "Playlist tanpa judul",
-    "fetchingInfo": "Mengambil informasi playlist..."
+    "fetchingInfo": "Mengambil informasi playlist...",
+    "createSubfolder": "Buat subfolder untuk playlist"
   },
   "settings": {
     "aboutTab": "Tentang",

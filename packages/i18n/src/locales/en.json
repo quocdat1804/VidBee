@@ -65,7 +65,11 @@
       "license": "License",
       "licenseDescription": "Review the open-source license terms.",
       "website": "Official website",
-      "websiteDescription": "Product highlights, roadmap, and community news."
+      "websiteDescription": "Product highlights, roadmap, and community news.",
+      "supportedSites": "Supported sites",
+      "supportedSitesDescription": "View the list of supported video hosting platforms.",
+      "tools": "Tools",
+      "toolsDescription": "Advanced downloader options, cookies extraction, and helper tools."
     },
     "resourcesDescription": "Useful links to learn more about VidBee and stay connected.",
     "resourcesTitle": "Resources",
@@ -347,6 +351,7 @@
   "playlist": {
     "badgeLabel": "Playlist",
     "clearPreview": "Clear preview",
+    "createSubfolder": "Create subfolder for playlist",
     "collapsedProgress": "Downloading playlist: {{completed}} / {{total}} completed",
     "comingSoon": "Playlist download feature coming soon!",
     "completed": "Playlist downloaded",

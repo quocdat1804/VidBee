@@ -62,7 +62,11 @@
       "license": "라이선스",
       "licenseDescription": "오픈소스 라이선스 조건을 검토하세요.",
       "website": "공식 웹사이트",
-      "websiteDescription": "제품 하이라이트, 로드맵 및 커뮤니티 뉴스."
+      "websiteDescription": "제품 하이라이트, 로드맵 및 커뮤니티 뉴스.",
+      "supportedSites": "지원되는 사이트",
+      "supportedSitesDescription": "지원되는 비디오 플랫폼 목록을 확인합니다.",
+      "tools": "도구",
+      "toolsDescription": "고급 다운로더 옵션 및 보조 도구."
     },
     "resourcesDescription": "VidBee에 대해 더 알아보고 연결을 유지하는 유용한 링크입니다.",
     "resourcesTitle": "리소스",
@@ -388,7 +392,8 @@
     "title": "재생목록 다운로드",
     "totalVideos": "총 동영상 수: {{count}}",
     "untitled": "제목 없는 재생목록",
-    "fetchingInfo": "재생목록 정보를 가져오는 중..."
+    "fetchingInfo": "재생목록 정보를 가져오는 중...",
+    "createSubfolder": "재생목록 하위 폴더 생성"
   },
   "settings": {
     "aboutTab": "정보",

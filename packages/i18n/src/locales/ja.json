@@ -62,7 +62,11 @@
       "license": "ライセンス",
       "licenseDescription": "オープンソースライセンス条項を確認してください。",
       "website": "公式ウェブサイト",
-      "websiteDescription": "製品のハイライト、ロードマップ、コミュニティニュース。"
+      "websiteDescription": "製品のハイライト、ロードマップ、コミュニティニュース。",
+      "supportedSites": "対応サイト",
+      "supportedSitesDescription": "対応している動画配信プラットフォームの一覧を表示します。",
+      "tools": "ツール",
+      "toolsDescription": "高度なダウンローダー設定や補助ツール。"
     },
     "resourcesDescription": "VidBeeについてもっと学び、つながりを保つための有用なリンク。",
     "resourcesTitle": "リソース",
@@ -388,7 +392,8 @@
     "title": "プレイリストをダウンロード",
     "totalVideos": "合計動画: {{count}}",
     "untitled": "無題のプレイリスト",
-    "fetchingInfo": "プレイリスト情報を取得中..."
+    "fetchingInfo": "プレイリスト情報を取得中...",
+    "createSubfolder": "プレイリストのサブフォルダを作成する"
   },
   "settings": {
     "aboutTab": "について",

@@ -62,7 +62,11 @@
       "license": "Licencia",
       "licenseDescription": "Revisa los términos de la licencia de código abierto.",
       "website": "Sitio web oficial",
-      "websiteDescription": "Destacados del producto, hoja de ruta y noticias de la comunidad."
+      "websiteDescription": "Destacados del producto, hoja de ruta y noticias de la comunidad.",
+      "supportedSites": "Sitios soportados",
+      "supportedSitesDescription": "Ver la lista de plataformas de video soportadas.",
+      "tools": "Herramientas",
+      "toolsDescription": "Opciones avanzadas del descargador y herramientas auxiliares."
     },
     "resourcesDescription": "Enlaces útiles para aprender más sobre VidBee y mantenerte conectado.",
     "resourcesTitle": "Recursos",
@@ -388,7 +392,8 @@
     "title": "Descargar Lista de Reproducción",
     "totalVideos": "Total de videos: {{count}}",
     "untitled": "Lista de reproducción sin título",
-    "fetchingInfo": "Obteniendo información de la lista de reproducción..."
+    "fetchingInfo": "Obteniendo información de la lista de reproducción...",
+    "createSubfolder": "Crear una subcarpeta para la lista de reproducción"
   },
   "settings": {
     "aboutTab": "Acerca de",

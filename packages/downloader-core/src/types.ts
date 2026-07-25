@@ -201,6 +201,7 @@ export interface PlaylistDownloadInput {
   endIndex?: number
   containerFormat?: OneClickContainerOption
   settings?: DownloadRuntimeSettings
+  createSubfolder?: boolean
 }
 
 export interface PlaylistDownloadEntry {

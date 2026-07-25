@@ -297,7 +297,9 @@ class DownloadFacade extends EventEmitter {
     const settings = settingsManager.getAll()
     const resolvedDownloadPath =
       options.customDownloadPath?.trim() ||
-      path.join(settings.downloadPath, 'Playlists', sanitizePathSegment(playlist.title))
+      (options.createSubfolder === false
+        ? settings.downloadPath
+        : path.join(settings.downloadPath, 'Playlists', sanitizePathSegment(playlist.title)))
     ensureDirectoryExists(resolvedDownloadPath)
 
     const entries: PlaylistDownloadResult['entries'] = []
