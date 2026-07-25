@@ -30,6 +30,7 @@ import type { DownloadRecord } from '../../store/downloads'
 import {
   downloadStatsAtom,
   downloadsArrayAtom,
+  hasLoadedHistoryAtom,
   isHistoryLoadingAtom,
   removeHistoryRecordsAtom,
   removeHistoryRecordsByPlaylistAtom
@@ -135,6 +136,8 @@ export function UnifiedDownloadHistory({
   const { t } = useTranslation()
   const allRecords = useAtomValue(downloadsArrayAtom)
   const isHistoryLoading = useAtomValue(isHistoryLoadingAtom)
+  const hasLoadedHistory = useAtomValue(hasLoadedHistoryAtom)
+  const showSkeleton = isHistoryLoading || (!hasLoadedHistory && allRecords.length === 0)
   const downloadStats = useAtomValue(downloadStatsAtom)
   const removeHistoryRecords = useSetAtom(removeHistoryRecordsAtom)
   const removeHistoryRecordsByPlaylist = useSetAtom(removeHistoryRecordsByPlaylistAtom)
@@ -455,6 +458,22 @@ export function UnifiedDownloadHistory({
     overscan: 5
   })
 
+  useEffect(() => {
+    rowVirtualizer.measure()
+  }, [rowVirtualizer])
+
+  const handleFilterChange = useCallback(
+    (filter: StatusFilter) => {
+      setStatusFilter(filter)
+      if (scrollParentRef.current) {
+        scrollParentRef.current.scrollTop = 0
+      }
+      rowVirtualizer.scrollToOffset(0)
+      rowVirtualizer.measure()
+    },
+    [rowVirtualizer]
+  )
+
   const renderPlaylistGroup = useCallback(
     (groupId: string) => {
       const group = groupedView.groups.get(groupId)
@@ -523,7 +542,7 @@ export function UnifiedDownloadHistory({
           }
           activeFilter={statusFilter}
           filters={filters}
-          onFilterChange={setStatusFilter}
+          onFilterChange={handleFilterChange}
         />
       </CardHeader>
       <div className="flex-1 overflow-y-auto" ref={scrollParentRef}>
@@ -565,7 +584,7 @@ export function UnifiedDownloadHistory({
               </div>
             </div>
           )}
-          {isHistoryLoading ? (
+          {showSkeleton ? (
             <HistorySkeletonList />
           ) : filteredRecords.length === 0 ? (
             <DownloadEmptyState message={t('download.noItems')} />
