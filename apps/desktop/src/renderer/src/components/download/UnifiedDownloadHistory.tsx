@@ -483,7 +483,7 @@ export function UnifiedDownloadHistory({
   }, [confirmAction, selectableIds, selectedIds])
 
   return (
-    <div className={cn('flex h-full flex-col')}>
+    <div className={cn('flex min-h-0 flex-1 flex-col')}>
       <CardHeader className="z-50 gap-4 bg-background p-0 px-6 py-4 backdrop-blur">
         <DownloadFilterBar
           actions={
