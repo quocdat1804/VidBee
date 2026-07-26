@@ -1,6 +1,4 @@
-import { defineConfig } from "electrobun/config";
-
-export default defineConfig({
+export default {
   app: {
     name: "VidBee Electrobun",
     identifier: "com.vidbee.app.electrobun",
@@ -11,4 +9,4 @@ export default defineConfig({
       url: process.env.NODE_ENV === "development" ? "http://localhost:5173" : "views/main/index.html"
     }
   }
-});
+};
