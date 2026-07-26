@@ -38,7 +38,7 @@ import {
 import { settingsAtom } from '../../store/settings'
 import { DownloadDialog } from './DownloadDialog'
 import { DownloadItem } from './DownloadItem'
-import { PlaylistDownloadGroup } from './PlaylistDownloadGroup'
+import { PlaylistGroupHeader, savePlaylistExpandedState } from './PlaylistDownloadGroup'
 
 type StatusFilter = 'all' | 'active' | 'completed' | 'error'
 type ConfirmAction =
@@ -409,13 +409,40 @@ export function UnifiedDownloadHistory({
     }
   }
 
+  const [expandedGroupIds, setExpandedGroupIds] = useState<Set<string>>(() => {
+    const set = new Set<string>()
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key?.startsWith('playlist_expanded_') && localStorage.getItem(key) === 'true') {
+          set.add(key.replace('playlist_expanded_', ''))
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load playlist expanded states:', error)
+    }
+    return set
+  })
+
+  const handleToggleGroupExpand = useCallback((groupId: string) => {
+    setExpandedGroupIds((prev) => {
+      const next = new Set(prev)
+      const isExpanded = !next.has(groupId)
+      if (isExpanded) {
+        next.add(groupId)
+      } else {
+        next.delete(groupId)
+      }
+      savePlaylistExpandedState(groupId, isExpanded)
+      return next
+    })
+  }, [])
+
   const groupedView = useMemo(() => {
     const groups = new Map<
       string,
       { id: string; title: string; totalCount: number; records: DownloadRecord[] }
     >()
-    const order: Array<{ type: 'group'; id: string } | { type: 'single'; record: DownloadRecord }> =
-      []
 
     for (const record of filteredRecords) {
       if (record.playlistId) {
@@ -428,7 +455,6 @@ export function UnifiedDownloadHistory({
             records: []
           }
           groups.set(record.playlistId, group)
-          order.push({ type: 'group', id: record.playlistId })
         }
         group.records.push(record)
         if (!group.title && record.playlistTitle) {
@@ -437,8 +463,6 @@ export function UnifiedDownloadHistory({
         if (!group.totalCount && record.playlistSize) {
           group.totalCount = record.playlistSize
         }
-      } else {
-        order.push({ type: 'single', record })
       }
     }
 
@@ -456,15 +480,52 @@ export function UnifiedDownloadHistory({
       }
     }
 
+    type OrderItem =
+      | { type: 'single'; record: DownloadRecord }
+      | {
+          type: 'group-header'
+          groupId: string
+          group: { id: string; title: string; totalCount: number; records: DownloadRecord[] }
+        }
+      | { type: 'group-item'; record: DownloadRecord; groupId: string }
+
+    const order: OrderItem[] = []
+    const processedGroups = new Set<string>()
+
+    for (const record of filteredRecords) {
+      if (record.playlistId) {
+        if (!processedGroups.has(record.playlistId)) {
+          processedGroups.add(record.playlistId)
+          const group = groups.get(record.playlistId)
+          if (group) {
+            order.push({ type: 'group-header', groupId: record.playlistId, group })
+            if (expandedGroupIds.has(record.playlistId)) {
+              for (const gRecord of group.records) {
+                order.push({ type: 'group-item', record: gRecord, groupId: record.playlistId })
+              }
+            }
+          }
+        }
+      } else {
+        order.push({ type: 'single', record })
+      }
+    }
+
     return { order, groups }
-  }, [filteredRecords])
+  }, [filteredRecords, expandedGroupIds])
 
   const scrollParentRef = useRef<HTMLDivElement>(null)
 
   const rowVirtualizer = useVirtualizer({
     count: groupedView.order.length,
     getScrollElement: () => scrollParentRef.current,
-    estimateSize: () => 110,
+    estimateSize: (index) => {
+      const item = groupedView.order[index]
+      if (item?.type === 'group-header') {
+        return 52
+      }
+      return 110
+    },
     overscan: 5
   })
 
@@ -477,7 +538,6 @@ export function UnifiedDownloadHistory({
       }
       rowVirtualizer.scrollToOffset(0)
     }
-    rowVirtualizer.measure()
   }, [statusFilter, rowVirtualizer])
 
   const handleFilterChange = useCallback((filter: StatusFilter) => {
@@ -487,40 +547,6 @@ export function UnifiedDownloadHistory({
       setIsTransitionLoading(false)
     }, 150)
   }, [])
-
-  const handlePlaylistExpandToggle = useCallback(() => {
-    requestAnimationFrame(() => {
-      rowVirtualizer.measure()
-    })
-  }, [rowVirtualizer])
-
-  const renderPlaylistGroup = useCallback(
-    (groupId: string) => {
-      const group = groupedView.groups.get(groupId)
-      if (!group) {
-        return null
-      }
-      return (
-        <PlaylistDownloadGroup
-          groupId={group.id}
-          onDeletePlaylist={handleRequestDeletePlaylist}
-          onToggleExpand={handlePlaylistExpandToggle}
-          onToggleSelect={handleToggleSelect}
-          records={group.records}
-          selectedIds={selectedIds}
-          title={group.title}
-          totalCount={group.totalCount}
-        />
-      )
-    },
-    [
-      groupedView.groups,
-      handlePlaylistExpandToggle,
-      handleRequestDeletePlaylist,
-      handleToggleSelect,
-      selectedIds
-    ]
-  )
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -629,8 +655,10 @@ export function UnifiedDownloadHistory({
                 }
                 const key =
                   item.type === 'single'
-                    ? `${item.record.entryType}:${item.record.id}`
-                    : `group:${item.id}`
+                    ? `single:${item.record.entryType}:${item.record.id}`
+                    : item.type === 'group-header'
+                      ? `header:${item.groupId}`
+                      : `item:${item.groupId}:${item.record.entryType}:${item.record.id}`
 
                 return (
                   <div
@@ -651,8 +679,24 @@ export function UnifiedDownloadHistory({
                         isSelected={selectedIds.has(item.record.id)}
                         onToggleSelect={handleToggleSelect}
                       />
+                    ) : item.type === 'group-header' ? (
+                      <PlaylistGroupHeader
+                        groupId={item.groupId}
+                        isExpanded={expandedGroupIds.has(item.groupId)}
+                        onDeletePlaylist={handleRequestDeletePlaylist}
+                        onToggleExpand={() => handleToggleGroupExpand(item.groupId)}
+                        records={item.group.records}
+                        title={item.group.title}
+                        totalCount={item.group.totalCount}
+                      />
                     ) : (
-                      renderPlaylistGroup(item.id)
+                      <div className="pr-2 pl-6">
+                        <DownloadItem
+                          download={item.record}
+                          isSelected={selectedIds.has(item.record.id)}
+                          onToggleSelect={handleToggleSelect}
+                        />
+                      </div>
                     )}
                   </div>
                 )

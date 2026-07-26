@@ -1,31 +1,28 @@
 import { ChevronDown, ChevronRight, Trash2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { DownloadRecord } from '../../store/downloads'
 import { Button } from '../ui/button'
 import { Progress } from '../ui/progress'
-import { DownloadItem } from './DownloadItem'
 
-interface PlaylistDownloadGroupProps {
+export interface PlaylistGroupHeaderProps {
   groupId: string
   title: string
   records: DownloadRecord[]
   totalCount: number
-  selectedIds?: Set<string>
-  onToggleSelect?: (id: string) => void
+  isExpanded: boolean
+  onToggleExpand: () => void
   onDeletePlaylist?: (playlistId: string, title: string, ids: string[]) => void
-  onToggleExpand?: () => void
 }
 
 const STORAGE_KEY_PREFIX = 'playlist_expanded_'
 
-const getStorageKey = (groupId: string): string => {
+export const getPlaylistStorageKey = (groupId: string): string => {
   return `${STORAGE_KEY_PREFIX}${groupId}`
 }
 
-const loadExpandedState = (groupId: string): boolean => {
+export const loadPlaylistExpandedState = (groupId: string): boolean => {
   try {
-    const stored = localStorage.getItem(getStorageKey(groupId))
+    const stored = localStorage.getItem(getPlaylistStorageKey(groupId))
     return stored === 'true'
   } catch (error) {
     console.error('Failed to load playlist expanded state:', error)
@@ -33,38 +30,24 @@ const loadExpandedState = (groupId: string): boolean => {
   }
 }
 
-const saveExpandedState = (groupId: string, isExpanded: boolean): void => {
+export const savePlaylistExpandedState = (groupId: string, isExpanded: boolean): void => {
   try {
-    localStorage.setItem(getStorageKey(groupId), String(isExpanded))
+    localStorage.setItem(getPlaylistStorageKey(groupId), String(isExpanded))
   } catch (error) {
     console.error('Failed to save playlist expanded state:', error)
   }
 }
 
-export function PlaylistDownloadGroup({
+export function PlaylistGroupHeader({
   groupId,
   title,
   records,
   totalCount,
-  selectedIds,
-  onToggleSelect,
-  onDeletePlaylist,
-  onToggleExpand
-}: PlaylistDownloadGroupProps) {
+  isExpanded,
+  onToggleExpand,
+  onDeletePlaylist
+}: PlaylistGroupHeaderProps) {
   const { t } = useTranslation()
-  const [isExpanded, setIsExpanded] = useState(() => loadExpandedState(groupId))
-
-  useEffect(() => {
-    saveExpandedState(groupId, isExpanded)
-  }, [groupId, isExpanded])
-
-  const handleToggle = () => {
-    setIsExpanded((prev) => {
-      const next = !prev
-      onToggleExpand?.()
-      return next
-    })
-  }
 
   const completedCount = records.filter((record) => record.status === 'completed').length
   const errorCount = records.filter((record) => record.status === 'error').length
@@ -94,7 +77,7 @@ export function PlaylistDownloadGroup({
           aria-expanded={isExpanded}
           aria-label={toggleLabel}
           className="flex min-w-0 flex-1 items-center gap-2 rounded-md p-1.5 px-3 transition-colors hover:bg-muted/40 active:bg-muted/60"
-          onClick={handleToggle}
+          onClick={onToggleExpand}
           title={toggleLabel}
           type="button"
         >
@@ -155,25 +138,6 @@ export function PlaylistDownloadGroup({
       {!isExpanded && totalCount > 0 && (
         <Progress className="h-0.5 w-full" value={aggregatePercent} />
       )}
-
-      <div
-        className="grid overflow-hidden transition-[grid-template-rows] duration-300 ease-in-out"
-        style={{
-          gridTemplateRows: isExpanded ? '1fr' : '0fr'
-        }}
-      >
-        <div className="min-h-0">
-          {records.map((record) => (
-            <div key={`${groupId}:${record.entryType}:${record.id}`}>
-              <DownloadItem
-                download={record}
-                isSelected={selectedIds?.has(record.id) ?? false}
-                onToggleSelect={onToggleSelect}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   )
 }
