@@ -6,7 +6,7 @@ const win = new Electrobun.BrowserWindow({
   title: "VidBee Desktop (Electrobun)",
   width: 1200,
   height: 800,
-  url: "about:blank"
+  url: "http://localhost:5173"
 });
 
 win.on("close", () => {
