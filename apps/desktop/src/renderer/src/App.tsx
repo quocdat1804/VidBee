@@ -159,11 +159,18 @@ function AppContent() {
           ipcServices.app.getPlatform(),
           ipcServices.app.getVersion()
         ])
-        setPlatform(platformInfo)
-        setAppVersion(version)
+        const detectedPlatform =
+          platformInfo ||
+          (navigator.platform?.toLowerCase().includes('mac') || navigator.userAgent?.includes('Mac')
+            ? 'darwin'
+            : 'win32')
+        setPlatform(detectedPlatform)
+        setAppVersion(version || '')
       } catch (error) {
         console.error('Failed to get runtime info:', error)
-        setPlatform('unknown')
+        const isMac =
+          navigator.platform?.toLowerCase().includes('mac') || navigator.userAgent?.includes('Mac')
+        setPlatform(isMac ? 'darwin' : 'win32')
         setAppVersion('')
       }
     }
