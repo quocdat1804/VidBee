@@ -1,41 +1,26 @@
 import Electrobun from "electrobun/bun";
-import { existsSync, readFileSync } from "fs";
-import { join, extname } from "path";
+import { join } from "path";
 
 console.log("VidBee Electrobun main process initialized");
 
 // Path to built React 19 VidBee UI bundle
 const rendererDir = join(import.meta.dir, "../../../desktop/out/renderer");
 
-const mimeTypes: Record<string, string> = {
-  ".html": "text/html",
-  ".js": "application/javascript",
-  ".css": "text/css",
-  ".png": "image/png",
-  ".jpg": "image/jpeg",
-  ".svg": "image/svg+xml",
-  ".json": "application/json",
-  ".woff2": "font/woff2"
-};
-
-// Start Bun local static file server for React 19 UI
+// Start Bun local static file server for React 19 UI using Bun.file
 const server = Bun.serve({
   port: 3333,
-  fetch(req) {
+  async fetch(req) {
     const url = new URL(req.url);
-    let filePath = join(rendererDir, url.pathname === "/" ? "index.html" : url.pathname);
-
-    if (!existsSync(filePath)) {
-      filePath = join(rendererDir, "index.html");
+    const relativePath = url.pathname === "/" ? "index.html" : url.pathname.replace(/^\//, "");
+    const filePath = join(rendererDir, relativePath);
+    
+    const file = Bun.file(filePath);
+    if (await file.exists()) {
+      return new Response(file);
     }
 
-    const ext = extname(filePath);
-    const contentType = mimeTypes[ext] || "application/octet-stream";
-    const fileContent = readFileSync(filePath);
-
-    return new Response(fileContent, {
-      headers: { "Content-Type": contentType }
-    });
+    // Fallback for SPA routing
+    return new Response(Bun.file(join(rendererDir, "index.html")));
   }
 });
 
