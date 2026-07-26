@@ -598,7 +598,7 @@ export function UnifiedDownloadHistory({
           onFilterChange={handleFilterChange}
         />
       </CardHeader>
-      <div className="flex-1 overflow-y-auto" ref={scrollParentRef}>
+      <div className="min-h-0 flex-1 overflow-y-auto" ref={scrollParentRef}>
         <CardContent className="w-full space-y-3 overflow-x-hidden p-0">
           {topContent}
           {showCookiesTip && (
