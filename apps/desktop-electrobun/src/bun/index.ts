@@ -4,8 +4,13 @@ console.log("VidBee Electrobun main process initialized successfully");
 
 const win = new Electrobun.BrowserWindow({
   title: "VidBee Desktop (Electrobun)",
-  width: 1200,
-  height: 800,
+  frame: {
+    x: 0,
+    y: 0,
+    width: 1200,
+    height: 800
+  },
+  titleBarStyle: "hiddenInset",
   url: "http://localhost:5173"
 });
 
