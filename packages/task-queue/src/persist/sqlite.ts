@@ -127,29 +127,37 @@ export class SqlitePersistAdapter implements PersistAdapter {
   }
 
   async closeAttempt(input: RecordCloseInput): Promise<void> {
-    this.ensureStmts()
-    this.stmts.closeAttempt.run(
-      input.endedAt,
-      input.exitCode,
-      input.errorCategory,
-      input.stdoutTail,
-      input.stderrTail,
-      input.attemptId
-    )
+    try {
+      this.ensureStmts()
+      this.stmts.closeAttempt.run(
+        input.endedAt,
+        input.exitCode,
+        input.errorCategory,
+        input.stdoutTail,
+        input.stderrTail,
+        input.attemptId
+      )
+    } catch (error) {
+      console.warn('SqlitePersistAdapter.closeAttempt warning:', error)
+    }
   }
 
   async appendJournal(input: JournalAppendInput): Promise<void> {
-    this.ensureStmts()
-    this.stmts.appendJournal.run(
-      input.ts,
-      input.op,
-      input.taskId,
-      input.attemptId,
-      input.pid,
-      input.pidStartedAt,
-      input.exitCode,
-      input.signal
-    )
+    try {
+      this.ensureStmts()
+      this.stmts.appendJournal.run(
+        input.ts,
+        input.op,
+        input.taskId,
+        input.attemptId,
+        input.pid,
+        input.pidStartedAt,
+        input.exitCode,
+        input.signal
+      )
+    } catch (error) {
+      console.warn('SqlitePersistAdapter.appendJournal warning:', error)
+    }
   }
 
   async findOpenSpawns(): Promise<ProcessJournalRow[]> {

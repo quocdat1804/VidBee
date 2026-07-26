@@ -1,4 +1,5 @@
 {
+  "biome.lspBin": "./apps/desktop/node_modules/.bin/biome",
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.codeActionsOnSave": {
