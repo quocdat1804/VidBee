@@ -8,7 +8,8 @@
     "./browser-cookies-setting": "./src/browser-cookies-setting.ts",
     "./download-file": "./src/download-file.ts",
     "./format-preferences": "./src/format-preferences.ts",
-    "./yt-dlp-args": "./src/yt-dlp-args.ts"
+    "./yt-dlp-args": "./src/yt-dlp-args.ts",
+    "./bun-spawner": "./src/bun-spawner.ts"
   },
   "types": "./src/index.ts",
   "scripts": {
@@ -21,6 +22,7 @@
     "zod": "^4.1.11"
   },
   "devDependencies": {
+    "@types/bun": "^1.2.2",
     "@types/node": "^22.18.6",
     "typescript": "^7.0.2"
   }
