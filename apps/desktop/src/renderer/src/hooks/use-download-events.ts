@@ -53,9 +53,11 @@ export function useDownloadEvents() {
     const syncActiveDownloads = async () => {
       try {
         const activeDownloads = await ipcServices.download.getActiveDownloads()
-        activeDownloads.forEach((item) => {
-          addDownload(item)
-        })
+        if (Array.isArray(activeDownloads)) {
+          activeDownloads.forEach((item) => {
+            addDownload(item)
+          })
+        }
       } catch (error) {
         console.error('Failed to load active downloads:', error)
       }

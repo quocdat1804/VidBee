@@ -15,6 +15,9 @@ export const enableDownloadNotificationsAtom = atom(
 export const loadSettingsAtom = atom(null, async (_get, set) => {
   try {
     const settings = await ipcServices.settings.getAll()
+    if (!settings) {
+      return
+    }
     const savedLanguage = normalizeLanguageCode(settings.language)
     const currentLanguage = normalizeLanguageCode(i18n.language)
 

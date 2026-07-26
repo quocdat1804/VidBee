@@ -123,7 +123,8 @@ export const setHistoryRecordsAtom = atom(null, (get, set, items: DownloadHistor
       downloads.delete(key)
     }
   }
-  for (const item of items) {
+  const safeItems = Array.isArray(items) ? items : []
+  for (const item of safeItems) {
     const activeKey = recordKey('active', item.id)
     if (downloads.has(activeKey)) {
       if (!isFinalStatus(item.status)) {

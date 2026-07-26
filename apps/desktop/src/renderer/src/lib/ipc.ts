@@ -22,22 +22,35 @@ import type { IpcServices } from '@shared/types/ipc'
 
 import { createIpcProxy } from 'electron-ipc-decorator/client'
 
+const dummyIpcRenderer = {
+  send: () => {},
+  on: () => {},
+  once: () => {},
+  removeListener: () => {},
+  removeAllListeners: () => {},
+  invoke: async () => null
+} as unknown as Electron.IpcRenderer
+
 // ipcRenderer should be exposed through electron's context bridge
 // Create type-safe IPC proxy for renderer process
 export const ipcServices = createIpcProxy<IpcServices>(
-  window.electron.ipcRenderer as unknown as Electron.IpcRenderer
+  (window.electron?.ipcRenderer ?? dummyIpcRenderer) as unknown as Electron.IpcRenderer
 ) as NonNullable<ReturnType<typeof createIpcProxy<IpcServices>>>
 
 // Export event listening utilities
 export const ipcEvents = {
   on: (channel: string, callback: (...args: unknown[]) => void) => {
-    return window.api.on(channel, callback)
+    return window.api?.on ? window.api.on(channel, callback) : () => {}
   },
   removeListener: (channel: string, callback: (...args: unknown[]) => void) => {
-    window.api.removeListener(channel, callback)
+    if (window.api?.removeListener) {
+      window.api.removeListener(channel, callback)
+    }
   },
   send: (channel: string, ...args: unknown[]) => {
-    window.api.send(channel, ...args)
+    if (window.api?.send) {
+      window.api.send(channel, ...args)
+    }
   }
 }
 

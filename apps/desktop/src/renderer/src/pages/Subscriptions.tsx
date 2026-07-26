@@ -225,7 +225,7 @@ export function Subscriptions() {
 
   const sortedSubscriptions = useMemo(
     () =>
-      [...subscriptions].sort(
+      [...(Array.isArray(subscriptions) ? subscriptions : [])].sort(
         (a, b) => (b.updatedAt ?? b.createdAt ?? 0) - (a.updatedAt ?? a.createdAt ?? 0)
       ),
     [subscriptions]

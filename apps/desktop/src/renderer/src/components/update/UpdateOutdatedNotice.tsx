@@ -15,7 +15,10 @@ const MINOR_VERSION_WEIGHT = 100
 const MAJOR_VERSION_WEIGHT = 10_000
 const OUTDATED_VERSION_DISTANCE_THRESHOLD = 3
 
-const parseVersion = (version: string): [number, number, number] | null => {
+const parseVersion = (version: string | null | undefined): [number, number, number] | null => {
+  if (!version || typeof version !== 'string') {
+    return null
+  }
   const parts = version.split(/[.-]/).slice(0, 3)
   if (parts.length === 0) {
     return null
