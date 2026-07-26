@@ -8,7 +8,7 @@ export default defineConfig({
   },
   browserViews: {
     main: {
-      url: "http://localhost:5173"
+      url: process.env.NODE_ENV === "development" ? "http://localhost:5173" : "views/main/index.html"
     }
   }
 });

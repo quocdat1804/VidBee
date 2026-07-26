@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "electrobun dev",
-    "build": "electrobun build"
+    "build": "pnpm --filter ./apps/desktop run build && electrobun build"
   },
   "dependencies": {
     "electrobun": "^0.1.0"
