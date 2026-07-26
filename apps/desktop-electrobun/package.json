@@ -1,0 +1,13 @@
+{
+  "name": "@vidbee/desktop-electrobun",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "electrobun dev",
+    "build": "electrobun build"
+  },
+  "dependencies": {
+    "electrobun": "^0.1.0"
+  }
+}
