@@ -1,6 +1,7 @@
 node_modules
 /dist
 apps/desktop/dist
+apps/desktop-electrobun/build
 apps/web/dist
 apps/api/.data/
 out
