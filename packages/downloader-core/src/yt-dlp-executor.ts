@@ -11,6 +11,7 @@
  * Reference: NEX-131 issue body §A; design doc §5 / §10.
  */
 import { existsSync, statSync } from 'node:fs'
+import { isAbsolute, resolve } from 'node:path'
 import type {
   ClassifiedError,
   Executor,
@@ -300,7 +301,16 @@ export class YtDlpExecutor implements Executor {
     const finishSuccessfulProcess = (closedAt: number): void => {
       const stdout = stdoutTail.read()
       const stderr = stderrTail.read()
-      const filePath = filePathSeen ?? extractSavedFilePath(`${stdout}\n${stderr}`) ?? ''
+      const rawFilePath = filePathSeen ?? extractSavedFilePath(`${stdout}\n${stderr}`) ?? ''
+      // yt-dlp prints whatever it wrote, which stays relative when the task's
+      // download path is relative. Resolve it against the same base directory
+      // the child was invoked with so the existsSync/statSync below see the
+      // real file and the kernel's output-missing guard does not demote a
+      // perfectly good download.
+      const filePath =
+        rawFilePath && !isAbsolute(rawFilePath)
+          ? resolve(this.resolveDownloadPath(ctx.input), rawFilePath)
+          : rawFilePath
       // Stat the produced file so the kernel's processing→completed guard
       // (size > 0) sees real bytes and downstream projections (history UI,
       // SSE events, CLI envelope) report the correct file size. statSync
@@ -539,6 +549,23 @@ export class YtDlpExecutor implements Executor {
     }
   }
 
+  /**
+   * Directory yt-dlp writes into. Kept in one place so the download argv and
+   * the finish-time path reconciliation always agree on the base directory.
+   */
+  private resolveDownloadPath(input: TaskInput): string {
+    const opts = (input.options ?? {}) as YtDlpTaskOptions
+    const settings: DownloadRuntimeSettings = {
+      ...this.opts.defaultRuntimeSettings,
+      ...(opts.settings ?? {})
+    }
+    return (
+      opts.customDownloadPath?.trim() ||
+      settings.downloadPath?.trim() ||
+      this.opts.defaultDownloadDir
+    )
+  }
+
   private buildArgsFor(input: TaskInput): string[] {
     if (this.opts.buildArgs) {
       return this.opts.buildArgs(input, this.opts.defaultDownloadDir)
@@ -552,10 +579,7 @@ export class YtDlpExecutor implements Executor {
       ...this.opts.defaultRuntimeSettings,
       ...(opts.settings ?? {})
     }
-    const downloadPath =
-      opts.customDownloadPath?.trim() ||
-      settings.downloadPath?.trim() ||
-      this.opts.defaultDownloadDir
+    const downloadPath = this.resolveDownloadPath(input)
     const merged: DownloadRuntimeSettings = { ...settings, downloadPath }
     const extra = this.opts.extraArgs ? [...this.opts.extraArgs()] : []
     return buildDownloadArgs(
