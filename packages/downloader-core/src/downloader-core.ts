@@ -22,6 +22,7 @@ import {
   buildVideoInfoArgs,
   formatYtDlpCommand
 } from './yt-dlp-args'
+import { extractSavedFilePath } from './yt-dlp-executor'
 
 const require = createRequire(import.meta.url)
 const YTDlpWrapModule = require('yt-dlp-wrap-plus')
@@ -435,41 +436,7 @@ const trimTaskLog = (value: string): string => {
   return value.slice(value.length - MAX_TASK_LOG_LENGTH)
 }
 
-const extractSavedFilePath = (rawLog: string): string | undefined => {
-  const log = rawLog.trim()
-  if (!log) {
-    return undefined
-  }
 
-  const quotedPatterns = [
-    /Merging formats into "([^"]+)"/g,
-    /Destination:\s+"([^"]+)"/g,
-    /Destination:\s+'([^']+)'/g,
-    /\[download\]\s+([^\r\n]+?)\s+has already been downloaded/g
-  ]
-
-  for (const pattern of quotedPatterns) {
-    const matches = Array.from(log.matchAll(pattern))
-    const lastMatch = matches.at(-1)
-    const candidate = lastMatch?.[1]?.trim()
-    if (candidate) {
-      return candidate
-    }
-  }
-
-  const lines = log.split(/\r?\n/).reverse()
-  for (const line of lines) {
-    const destinationIndex = line.indexOf('Destination:')
-    if (destinationIndex >= 0) {
-      const candidate = line.slice(destinationIndex + 'Destination:'.length).trim()
-      if (candidate) {
-        return candidate
-      }
-    }
-  }
-
-  return undefined
-}
 
 const cloneVideoFormat = (format?: VideoFormat): VideoFormat | undefined => {
   if (!format) {

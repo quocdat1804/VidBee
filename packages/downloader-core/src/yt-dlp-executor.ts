@@ -12,6 +12,7 @@
  */
 import { existsSync, statSync } from 'node:fs'
 import { createRequire } from 'node:module'
+import path from 'node:path'
 
 import type {
   ClassifiedError,
@@ -134,8 +135,8 @@ const STDERR_TAIL_BYTES = 8 * 1024
 const PROCESSING_DETECT_PATTERNS = [
   /\bMerging formats?\b/i,
   /^\[Postprocess\]/m,
-  /\b(?:Embedding|Adding|Fixing|Converting)\b/i,
-  /\b(?:ExtractAudio|VideoConvertor|FFmpeg)\b/i
+  /\b(?:Embedding|Adding|Fixing|Converting|Remuxing)\b/i,
+  /\b(?:ExtractAudio|VideoConvertor|VideoRemuxer|Fixup\w+|Metadata|EmbedSubtitle|EmbedThumbnail|ModifyChapters|AtomicParsley|MoveFiles|FFmpeg)\b/i
 ]
 
 const FFMPEG_NOT_FOUND_ERROR =
@@ -178,6 +179,10 @@ export class YtDlpExecutor implements Executor {
     // body so it can fall outside the 8KB stdout tail; we sniff streaming
     // chunks instead and keep the last value across the whole run.
     let formatIdSeen: string | undefined
+    // Similarly capture the output filePath as it streams so long fragment
+    // downloads (e.g. 100+ fragments pushing [download] Destination: out of the
+    // 8KB tail buffer) never lose track of the downloaded file.
+    let filePathSeen: string | undefined
 
     const finishOnce = (e: Parameters<ExecutorEvents['onFinish']>[0]) => {
       if (settled) return
@@ -275,6 +280,9 @@ export class YtDlpExecutor implements Executor {
       spawnedAt: this.opts.clock()
     })
 
+    let stdoutRemainder = ''
+    let stderrRemainder = ''
+
     const pumpStdoutPostprocess = (chunk: Buffer): void => {
       const text = chunk.toString()
       stdoutTail.append(text)
@@ -285,6 +293,15 @@ export class YtDlpExecutor implements Executor {
       if (fid) {
         formatIdSeen = fid
       }
+      const combined = stdoutRemainder + text
+      const lines = combined.split(/\r?\n/)
+      stdoutRemainder = lines.pop() ?? ''
+      for (const line of lines) {
+        const fp = extractCandidateFromLine(line)
+        if (fp) {
+          filePathSeen = fp
+        }
+      }
     }
 
     const pumpStderrPostprocess = (chunk: Buffer): void => {
@@ -292,6 +309,15 @@ export class YtDlpExecutor implements Executor {
       stderrTail.append(text)
       if (!postprocessSeen && hasPostprocessSignal(text)) {
         postprocessSeen = true
+      }
+      const combined = stderrRemainder + text
+      const lines = combined.split(/\r?\n/)
+      stderrRemainder = lines.pop() ?? ''
+      for (const line of lines) {
+        const fp = extractCandidateFromLine(line)
+        if (fp) {
+          filePathSeen = fp
+        }
       }
       events.onStd({
         taskId: ctx.taskId,
@@ -327,6 +353,14 @@ export class YtDlpExecutor implements Executor {
       const closedAt = this.opts.clock()
       const stdout = stdoutTail.read()
       const stderr = stderrTail.read()
+      if (stdoutRemainder) {
+        const fp = extractCandidateFromLine(stdoutRemainder)
+        if (fp) filePathSeen = fp
+      }
+      if (stderrRemainder) {
+        const fp = extractCandidateFromLine(stderrRemainder)
+        if (fp) filePathSeen = fp
+      }
       if (cancelRequested) {
         finishOnce({
           taskId: ctx.taskId,
@@ -339,7 +373,19 @@ export class YtDlpExecutor implements Executor {
         return
       }
       if (code === 0) {
-        const filePath = extractSavedFilePath(stdout) || ''
+        let filePath = extractSavedFilePath(stdout) || filePathSeen || ''
+        if (filePath && !path.isAbsolute(filePath)) {
+          const downloadDirOption =
+            typeof ctx.input.options?.downloadDir === 'string'
+              ? ctx.input.options.downloadDir
+              : undefined
+          const baseDir =
+            downloadDirOption ||
+            (typeof this.opts.defaultDownloadDir === 'string'
+              ? this.opts.defaultDownloadDir
+              : process.cwd())
+          filePath = path.resolve(baseDir, filePath)
+        }
         // Stat the produced file so the kernel's processing→completed guard
         // (size > 0) sees real bytes and downstream projections (history UI,
         // SSE events, CLI envelope) report the correct file size. statSync
@@ -586,27 +632,78 @@ function extractFormatId(rawLog: string): string | undefined {
   return value
 }
 
-function extractSavedFilePath(rawLog: string): string | undefined {
+export function extractCandidateFromLine(line: string): string | undefined {
+  const trimmed = line.trim()
+  if (!trimmed) return undefined
+
+  // 1. [Metadata] Adding/Writing metadata to "..." / '...'
+  const metaMatch = trimmed.match(/^\[Metadata\]\s+(?:Adding|Writing)\s+metadata\s+to\s+["']([^"']+)["']/i)
+  if (metaMatch?.[1]) return metaMatch[1].trim()
+
+  // 2. [EmbedSubtitle] Embedding subtitles in "..."
+  const subMatch = trimmed.match(/^\[EmbedSubtitle\]\s+Embedding\s+subtitles\s+in\s+["']([^"']+)["']/i)
+  if (subMatch?.[1]) return subMatch[1].trim()
+
+  // 3. [EmbedThumbnail] ... "..." / [ModifyChapters] Writing chapters to "..."
+  const thumbMatch = trimmed.match(/^\[EmbedThumbnail\]\s+.*?["']([^"']+)["']/i)
+  if (thumbMatch?.[1]) return thumbMatch[1].trim()
+
+  const chapMatch = trimmed.match(/^\[ModifyChapters\]\s+Writing\s+chapters\s+to\s+["']([^"']+)["']/i)
+  if (chapMatch?.[1]) return chapMatch[1].trim()
+
+  // 4. [VideoRemuxer] / [VideoConvertor]
+  // e.g. [VideoRemuxer] Not remuxing media file "file.mp4"; already is in target format mp4
+  const remuxNoChangeMatch = trimmed.match(/^\[VideoRemuxer\]\s+Not\s+remuxing\s+media\s+file\s+["']([^"']+)["']/i)
+  if (remuxNoChangeMatch?.[1]) return remuxNoChangeMatch[1].trim()
+
+  // e.g. [VideoRemuxer] Remuxing video from mp4 to mkv; resulting file is "file.mkv"
+  const remuxResultMatch = trimmed.match(/^\[(?:VideoRemuxer|VideoConvertor)\]\s+.*?resulting\s+file\s+is\s+["']([^"']+)["']/i)
+  if (remuxResultMatch?.[1]) return remuxResultMatch[1].trim()
+
+  // e.g. [VideoRemuxer] Remuxing video to "file.mkv"
+  const remuxToMatch = trimmed.match(/^\[(?:VideoRemuxer|VideoConvertor)\]\s+.*?to\s+["']([^"']+)["']/i)
+  if (remuxToMatch?.[1]) return remuxToMatch[1].trim()
+
+  // 5. [Fixup...]
+  // e.g. [FixupM3u8] Fixing MPEG-TS in MP4 container of "/path/to/file.mp4"
+  const fixupMatch = trimmed.match(/^\[Fixup\w+\]\s+.*?["']([^"']+)["']/i)
+  if (fixupMatch?.[1]) return fixupMatch[1].trim()
+
+  // 6. [Merger] Merging formats into "..."
+  const mergerMatch = trimmed.match(/(?:^\[Merger\]\s+)?Merging\s+formats\s+into\s+["']([^"']+)["']/i)
+  if (mergerMatch?.[1]) return mergerMatch[1].trim()
+
+  // 7. [MoveFiles] Moving file "..." to "..."
+  const moveMatch = trimmed.match(/^\[MoveFiles\]\s+Moving\s+file\s+["'][^"']+["']\s+to\s+["']([^"']+)["']/i)
+  if (moveMatch?.[1]) return moveMatch[1].trim()
+
+  // 8. [AtomicParsley] Fixing ... "..."
+  const atomicMatch = trimmed.match(/^\[AtomicParsley\]\s+.*?["']([^"']+)["']/i)
+  if (atomicMatch?.[1]) return atomicMatch[1].trim()
+
+  // 9. Destination: ...
+  const destIdx = trimmed.indexOf('Destination:')
+  if (destIdx >= 0) {
+    const rawDest = trimmed.slice(destIdx + 'Destination:'.length).trim()
+    const cleanedDest = rawDest.replace(/^["']|["']$/g, '').trim()
+    if (cleanedDest) return cleanedDest
+  }
+
+  // 10. [download] ... has already been downloaded
+  const alreadyMatch = trimmed.match(/^\[download\]\s+["']?([^\r\n"']+?)["']?\s+has already been downloaded/i)
+  if (alreadyMatch?.[1]) return alreadyMatch[1].trim()
+
+  return undefined
+}
+
+export function extractSavedFilePath(rawLog: string): string | undefined {
   const log = rawLog.trim()
   if (!log) return undefined
-  const patterns = [
-    /Merging formats into "([^"]+)"/g,
-    /Destination:\s+"([^"]+)"/g,
-    /Destination:\s+'([^']+)'/g,
-    /\[download\]\s+([^\r\n]+?)\s+has already been downloaded/g
-  ]
-  for (const re of patterns) {
-    const matches = Array.from(log.matchAll(re))
-    const last = matches.at(-1)
-    const candidate = last?.[1]?.trim()
-    if (candidate) return candidate
-  }
   const lines = log.split(/\r?\n/).reverse()
   for (const line of lines) {
-    const idx = line.indexOf('Destination:')
-    if (idx >= 0) {
-      const candidate = line.slice(idx + 'Destination:'.length).trim()
-      if (candidate) return candidate
+    const candidate = extractCandidateFromLine(line)
+    if (candidate) {
+      return candidate.replace(/^["']|["']$/g, '').trim()
     }
   }
   return undefined

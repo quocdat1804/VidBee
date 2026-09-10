@@ -286,10 +286,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path3) {
-  if (!path3)
+function getElementAtPath(obj, path4) {
+  if (!path4)
     return obj;
-  return path3.reduce((acc, key) => acc?.[key], obj);
+  return path4.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -601,11 +601,11 @@ function aborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path3, issues) {
+function prefixIssues(path4, issues) {
   return issues.map((iss) => {
     var _a2;
     (_a2 = iss).path ?? (_a2.path = []);
-    iss.path.unshift(path3);
+    iss.path.unshift(path4);
     return iss;
   });
 }
@@ -847,7 +847,7 @@ function formatError(error48, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error48, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error49, path3 = []) => {
+  const processError = (error49, path4 = []) => {
     var _a2, _b;
     for (const issue2 of error49.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
@@ -857,7 +857,7 @@ function treeifyError(error48, mapper = (issue2) => issue2.message) {
       } else if (issue2.code === "invalid_element") {
         processError({ issues: issue2.issues }, issue2.path);
       } else {
-        const fullpath = [...path3, ...issue2.path];
+        const fullpath = [...path4, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -889,8 +889,8 @@ function treeifyError(error48, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path3 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path3) {
+  const path4 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path4) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -13584,13 +13584,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path3 = ref.slice(1).split("/").filter(Boolean);
-  if (path3.length === 0) {
+  const path4 = ref.slice(1).split("/").filter(Boolean);
+  if (path4.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path3[0] === defsKey) {
-    const key = path3[1];
+  if (path4[0] === defsKey) {
+    const key = path4[1];
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -16128,6 +16128,26 @@ var init_store = __esm({
   }
 });
 
+// ../../packages/task-queue/src/process/kill-process-tree.ts
+import { execFile } from "node:child_process";
+var killProcessTree;
+var init_kill_process_tree = __esm({
+  "../../packages/task-queue/src/process/kill-process-tree.ts"() {
+    "use strict";
+    killProcessTree = (pid, signal = "SIGTERM") => {
+      if (pid === void 0 || pid <= 0) {
+        return;
+      }
+      if (process.platform === "win32") {
+        execFile("taskkill", ["/PID", String(pid), "/T", "/F"], () => {
+        });
+        return;
+      }
+      process.kill(pid, signal);
+    };
+  }
+});
+
 // ../../packages/task-queue/src/process/pid-start-time.ts
 import { existsSync as existsSync2, readFileSync as readFileSync2, statSync } from "node:fs";
 import { execFileSync } from "node:child_process";
@@ -16147,9 +16167,9 @@ function defaultImpl(pid) {
   return null;
 }
 function readLinuxStart(pid) {
-  const path3 = `/proc/${pid}/stat`;
-  if (!existsSync2(path3)) return null;
-  const raw = readFileSync2(path3, "utf8");
+  const path4 = `/proc/${pid}/stat`;
+  if (!existsSync2(path4)) return null;
+  const raw = readFileSync2(path4, "utf8");
   const lastParen = raw.lastIndexOf(")");
   if (lastParen < 0) return null;
   const fields = raw.slice(lastParen + 2).split(" ");
@@ -16212,12 +16232,13 @@ var ProcessRegistry;
 var init_registry = __esm({
   "../../packages/task-queue/src/process/registry.ts"() {
     "use strict";
+    init_kill_process_tree();
     init_pid_start_time();
     ProcessRegistry = class {
       constructor(deps) {
         this.deps = deps;
         this.clock = deps.clock ?? Date.now;
-        this.kill = deps.kill ?? ((pid, sig) => process.kill(pid, sig));
+        this.kill = deps.kill ?? ((pid, sig) => killProcessTree(pid, sig));
         this.sleep = deps.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms)));
         this.killGracePeriodMs = deps.killGracePeriodMs ?? 1e4;
       }
@@ -16427,6 +16448,7 @@ var init_watchdog = __esm({
 var init_process = __esm({
   "../../packages/task-queue/src/process/index.ts"() {
     "use strict";
+    init_kill_process_tree();
     init_registry();
     init_watchdog();
     init_pid_start_time();
@@ -16627,28 +16649,36 @@ var init_sqlite = __esm({
         );
       }
       async closeAttempt(input) {
-        this.ensureStmts();
-        this.stmts.closeAttempt.run(
-          input.endedAt,
-          input.exitCode,
-          input.errorCategory,
-          input.stdoutTail,
-          input.stderrTail,
-          input.attemptId
-        );
+        try {
+          this.ensureStmts();
+          this.stmts.closeAttempt.run(
+            input.endedAt,
+            input.exitCode,
+            input.errorCategory,
+            input.stdoutTail,
+            input.stderrTail,
+            input.attemptId
+          );
+        } catch (error48) {
+          console.warn("SqlitePersistAdapter.closeAttempt warning:", error48);
+        }
       }
       async appendJournal(input) {
-        this.ensureStmts();
-        this.stmts.appendJournal.run(
-          input.ts,
-          input.op,
-          input.taskId,
-          input.attemptId,
-          input.pid,
-          input.pidStartedAt,
-          input.exitCode,
-          input.signal
-        );
+        try {
+          this.ensureStmts();
+          this.stmts.appendJournal.run(
+            input.ts,
+            input.op,
+            input.taskId,
+            input.attemptId,
+            input.pid,
+            input.pidStartedAt,
+            input.exitCode,
+            input.signal
+          );
+        } catch (error48) {
+          console.warn("SqlitePersistAdapter.appendJournal warning:", error48);
+        }
       }
       async findOpenSpawns() {
         this.ensureStmts();
@@ -17035,6 +17065,21 @@ var init_api2 = __esm({
       list(opts = {}) {
         return this.store.list(opts);
       }
+      /**
+       * Read the persisted stdout/stderr tail for a task's latest attempt. Returns
+       * the combined log text (stdout then stderr), or null when no attempt has
+       * been recorded. Hosts use this to surface saved logs for terminal items
+       * after the live stream is gone (e.g. reopening a failed download).
+       */
+      async getTaskLog(id) {
+        const attempt = await this.persist.loadLatestAttempt(id);
+        if (!attempt) return null;
+        const parts = [];
+        if (attempt.stdoutTail?.trim()) parts.push(attempt.stdoutTail);
+        if (attempt.stderrTail?.trim()) parts.push(attempt.stderrTail);
+        const combined = parts.join("\n").trim();
+        return combined.length > 0 ? combined : null;
+      }
       async cancel(id, reason = "user") {
         const t = this.store.get(id);
         if (!t) return;
@@ -17193,8 +17238,16 @@ var init_api2 = __esm({
                   this.watchdog.promoteToProcessing(id);
                 }
               },
-              onStd: () => {
+              onStd: (e) => {
                 this.watchdog.bump(id);
+                this.bus.emit({
+                  type: "log",
+                  taskId: id,
+                  attemptId,
+                  stream: e.stream,
+                  line: e.line,
+                  at: this.clock()
+                });
               },
               onFinish: (e) => {
                 void this.handleFinish(id, attemptId, e);
@@ -17942,7 +17995,8 @@ var init_schemas4 = __esm({
       startIndex: external_exports.number().int().positive().optional(),
       endIndex: external_exports.number().int().positive().optional(),
       containerFormat: OneClickContainerOptionSchema.optional(),
-      settings: DownloadRuntimeSettingsSchema.optional()
+      settings: DownloadRuntimeSettingsSchema.optional(),
+      createSubfolder: external_exports.boolean().optional()
     });
     PlaylistDownloadEntrySchema = external_exports.object({
       downloadId: external_exports.string(),
@@ -18081,16 +18135,17 @@ var init_contract2 = __esm({
 });
 
 // ../../packages/downloader-core/src/yt-dlp-args.ts
+import { existsSync as existsSync4 } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-var YOUTUBE_HOST_SUFFIXES, YOUTUBE_SAFE_PLAYER_CLIENTS, DEFAULT_FILENAME_TEMPLATE, WINDOWS_FILENAME_TRIM_LENGTH, DEFAULT_RETRIES, DEFAULT_FRAGMENT_RETRIES, DEFAULT_RETRY_SLEEP, DEFAULT_SOCKET_TIMEOUT, appendNetworkResilienceArgs, hasYouTubeHost, trim, normalizeBrowserCookiesSettingForYtDlp, isBilibiliUrl, resolvePathWithHome, sanitizeFilenameTemplate, appendPlatformFilenameSafetyArgs, isYouTubeUrl, appendYouTubeSafeExtractorArgs, formatYtDlpCommand, resolveFfmpegLocationFromPath, resolveVideoFormatSelector, resolveAudioFormatSelector, buildDownloadArgs, buildVideoInfoArgs, buildPlaylistInfoArgs;
+var YOUTUBE_HOST_SUFFIXES, YOUTUBE_SAFE_PLAYER_CLIENTS, DEFAULT_FILENAME_TEMPLATE, WINDOWS_FILENAME_TRIM_LENGTH, DEFAULT_RETRIES, DEFAULT_FRAGMENT_RETRIES, DEFAULT_RETRY_SLEEP, DEFAULT_SOCKET_TIMEOUT, appendNetworkResilienceArgs, hasYouTubeHost, trim, normalizeBrowserCookiesSettingForYtDlp, isBilibiliUrl, isTwitchUrl, resolvePathWithHome, sanitizeFilenameTemplate, appendPlatformFilenameSafetyArgs, isYouTubeUrl, appendYouTubeSafeExtractorArgs, formatYtDlpCommand, resolveFfmpegLocationFromPath, BEST_FORMAT_FALLBACK, withBestFallback, resolveVideoFormatSelector, resolveAudioFormatSelector, buildDownloadArgs, buildVideoInfoArgs, buildPlaylistInfoArgs;
 var init_yt_dlp_args = __esm({
   "../../packages/downloader-core/src/yt-dlp-args.ts"() {
     "use strict";
     init_browser_cookies_setting();
     YOUTUBE_HOST_SUFFIXES = ["youtube.com", "youtu.be", "youtube-nocookie.com"];
     YOUTUBE_SAFE_PLAYER_CLIENTS = "default,-web";
-    DEFAULT_FILENAME_TEMPLATE = "%(title)s via VidBee.%(ext)s";
+    DEFAULT_FILENAME_TEMPLATE = "%(title)s.%(ext)s";
     WINDOWS_FILENAME_TRIM_LENGTH = "120";
     DEFAULT_RETRIES = "30";
     DEFAULT_FRAGMENT_RETRIES = "30";
@@ -18101,6 +18156,12 @@ var init_yt_dlp_args = __esm({
       args.push("--fragment-retries", DEFAULT_FRAGMENT_RETRIES);
       args.push("--retry-sleep", DEFAULT_RETRY_SLEEP);
       args.push("--socket-timeout", DEFAULT_SOCKET_TIMEOUT);
+      if (!args.includes("--concurrent-fragments") && !args.includes("-N")) {
+        args.push("--concurrent-fragments", "4");
+      }
+      if (!args.includes("--js-runtimes")) {
+        args.push("--js-runtimes", "node");
+      }
     };
     hasYouTubeHost = (host) => YOUTUBE_HOST_SUFFIXES.some((suffix) => host === suffix || host.endsWith(`.${suffix}`));
     trim = (value2) => value2?.trim() ?? "";
@@ -18120,13 +18181,26 @@ var init_yt_dlp_args = __esm({
       if (!looksLikePath) {
         return `${browser}:${profile}`;
       }
-      const profileName = profile.includes("\\") ? path.win32.basename(profile) : path.posix.basename(profile);
+      const isWindowsPath = profile.includes("\\");
+      const isAbsolutePath = isWindowsPath ? path.win32.isAbsolute(profile) : path.posix.isAbsolute(profile);
+      if (browser === "firefox" && isAbsolutePath && existsSync4(path.join(profile, "cookies.sqlite"))) {
+        return `${browser}:${profile}`;
+      }
+      const profileName = isWindowsPath ? path.win32.basename(profile) : path.posix.basename(profile);
       return profileName ? `${browser}:${profileName}` : browser;
     };
     isBilibiliUrl = (url2) => {
       try {
         const host = new URL(url2).hostname.toLowerCase();
         return host.includes("bilibili.com") || host.includes("b23.tv") || host.includes("bili.tv");
+      } catch {
+        return false;
+      }
+    };
+    isTwitchUrl = (url2) => {
+      try {
+        const host = new URL(url2).hostname.toLowerCase();
+        return host.includes("twitch.tv");
       } catch {
         return false;
       }
@@ -18189,6 +18263,8 @@ var init_yt_dlp_args = __esm({
       return `yt-dlp ${quoted.join(" ")}`;
     };
     resolveFfmpegLocationFromPath = (ffmpegPath) => path.dirname(ffmpegPath);
+    BEST_FORMAT_FALLBACK = "bestvideo+bestaudio/best";
+    withBestFallback = (selector) => selector.includes("/") ? selector : `${selector}/${BEST_FORMAT_FALLBACK}`;
     resolveVideoFormatSelector = (options) => {
       const format = options.format;
       const audioFormat = options.audioFormat;
@@ -18210,7 +18286,7 @@ var init_yt_dlp_args = __esm({
         if (!audioFormat || audioFormat === "best") {
           return "bestvideo+bestaudio/best";
         }
-        return `bestvideo+${audioFormat}`;
+        return withBestFallback(`bestvideo+${audioFormat}`);
       }
       if (audioFormat === "none") {
         return `${format}+none`;
@@ -18218,7 +18294,7 @@ var init_yt_dlp_args = __esm({
       if (!audioFormat || audioFormat === "best") {
         return `${format}+bestaudio/best`;
       }
-      return `${format}+${audioFormat}`;
+      return withBestFallback(`${format}+${audioFormat}`);
     };
     resolveAudioFormatSelector = (options) => {
       const format = options.format;
@@ -18262,7 +18338,7 @@ var init_yt_dlp_args = __esm({
       const browserForCookies = normalizeBrowserCookiesSettingForYtDlp(settings.browserForCookies);
       const cookiesPath = trim(settings.cookiesPath);
       const hasSubtitleAuth = browserForCookies && browserForCookies !== "none" || Boolean(cookiesPath);
-      const shouldAttemptSubtitles = !isBilibiliUrl(options.url) || hasSubtitleAuth;
+      const shouldAttemptSubtitles = !isBilibiliUrl(options.url) && !isTwitchUrl(options.url) || hasSubtitleAuth;
       if (shouldAttemptSubtitles) {
         if (embedSubs) {
           args.push("--sub-langs", "all");
@@ -18336,7 +18412,7 @@ var init_yt_dlp_args = __esm({
       return args;
     };
     buildPlaylistInfoArgs = (url2, settings, jsRuntimeArgs = []) => {
-      const args = ["-J", "--flat-playlist", "--no-warnings", "--encoding", "utf-8"];
+      const args = ["-J", "--flat-playlist", "--ignore-errors", "--no-warnings", "--encoding", "utf-8"];
       const proxy = trim(settings.proxy);
       if (proxy) {
         args.push("--proxy", proxy);
@@ -18365,44 +18441,556 @@ var init_yt_dlp_args = __esm({
   }
 });
 
+// ../../packages/downloader-core/src/yt-dlp-executor.ts
+import { existsSync as existsSync5, statSync as statSync3 } from "node:fs";
+import { createRequire } from "node:module";
+import path2 from "node:path";
+function makeNoopRun() {
+  return {
+    cancel: async () => {
+    },
+    pause: async () => {
+    }
+  };
+}
+function insertFfmpegLocation(args, ffmpegLocation) {
+  const urlArg = args.pop();
+  args.push("--ffmpeg-location", ffmpegLocation);
+  if (urlArg !== void 0) args.push(urlArg);
+}
+function mapProgress(payload) {
+  const percent = typeof payload.percent === "number" && !Number.isNaN(payload.percent) ? Math.max(0, Math.min(1, payload.percent / 100)) : null;
+  return {
+    percent,
+    bytesDownloaded: parseSize(payload.downloaded),
+    bytesTotal: parseSize(payload.total),
+    speedBps: parseSpeed(payload.currentSpeed),
+    etaMs: parseEtaMs(payload.eta),
+    ticks: 0
+  };
+}
+function parseSize(value2) {
+  if (!value2) return null;
+  const m = /([0-9]+(?:\.[0-9]+)?)\s*(B|KB|KiB|MB|MiB|GB|GiB|TB|TiB)/i.exec(value2);
+  if (!m) return null;
+  const n = Number.parseFloat(m[1] ?? "");
+  if (!Number.isFinite(n)) return null;
+  const unit = (m[2] ?? "B").toLowerCase();
+  const factor = unit === "kb" || unit === "kib" ? 1024 : unit === "mb" || unit === "mib" ? 1024 ** 2 : unit === "gb" || unit === "gib" ? 1024 ** 3 : unit === "tb" || unit === "tib" ? 1024 ** 4 : 1;
+  return Math.round(n * factor);
+}
+function parseSpeed(value2) {
+  if (!value2) return null;
+  const cleaned = value2.replace(/\/s$/i, "").trim();
+  return parseSize(cleaned);
+}
+function parseEtaMs(value2) {
+  if (!value2) return null;
+  const trimmed = value2.trim();
+  if (!trimmed || trimmed === "Unknown") return null;
+  const parts = trimmed.split(":").map((p) => Number.parseInt(p, 10));
+  if (parts.some((n) => !Number.isFinite(n))) return null;
+  let seconds = 0;
+  for (const p of parts) seconds = seconds * 60 + p;
+  return seconds * 1e3;
+}
+function hasPostprocessSignal(text2) {
+  return PROCESSING_DETECT_PATTERNS.some((re) => re.test(text2));
+}
+function extractFormatId(rawLog) {
+  const log = rawLog.trim();
+  if (!log) return void 0;
+  const re = /Downloading\s+\d+\s+format\(s\):\s+([^\r\n]+)/gi;
+  const matches = Array.from(log.matchAll(re));
+  const last = matches.at(-1);
+  const value2 = last?.[1]?.trim();
+  if (!value2) return void 0;
+  return value2;
+}
+function extractCandidateFromLine(line) {
+  const trimmed = line.trim();
+  if (!trimmed) return void 0;
+  const metaMatch = trimmed.match(/^\[Metadata\]\s+(?:Adding|Writing)\s+metadata\s+to\s+["']([^"']+)["']/i);
+  if (metaMatch?.[1]) return metaMatch[1].trim();
+  const subMatch = trimmed.match(/^\[EmbedSubtitle\]\s+Embedding\s+subtitles\s+in\s+["']([^"']+)["']/i);
+  if (subMatch?.[1]) return subMatch[1].trim();
+  const thumbMatch = trimmed.match(/^\[EmbedThumbnail\]\s+.*?["']([^"']+)["']/i);
+  if (thumbMatch?.[1]) return thumbMatch[1].trim();
+  const chapMatch = trimmed.match(/^\[ModifyChapters\]\s+Writing\s+chapters\s+to\s+["']([^"']+)["']/i);
+  if (chapMatch?.[1]) return chapMatch[1].trim();
+  const remuxNoChangeMatch = trimmed.match(/^\[VideoRemuxer\]\s+Not\s+remuxing\s+media\s+file\s+["']([^"']+)["']/i);
+  if (remuxNoChangeMatch?.[1]) return remuxNoChangeMatch[1].trim();
+  const remuxResultMatch = trimmed.match(/^\[(?:VideoRemuxer|VideoConvertor)\]\s+.*?resulting\s+file\s+is\s+["']([^"']+)["']/i);
+  if (remuxResultMatch?.[1]) return remuxResultMatch[1].trim();
+  const remuxToMatch = trimmed.match(/^\[(?:VideoRemuxer|VideoConvertor)\]\s+.*?to\s+["']([^"']+)["']/i);
+  if (remuxToMatch?.[1]) return remuxToMatch[1].trim();
+  const fixupMatch = trimmed.match(/^\[Fixup\w+\]\s+.*?["']([^"']+)["']/i);
+  if (fixupMatch?.[1]) return fixupMatch[1].trim();
+  const mergerMatch = trimmed.match(/(?:^\[Merger\]\s+)?Merging\s+formats\s+into\s+["']([^"']+)["']/i);
+  if (mergerMatch?.[1]) return mergerMatch[1].trim();
+  const moveMatch = trimmed.match(/^\[MoveFiles\]\s+Moving\s+file\s+["'][^"']+["']\s+to\s+["']([^"']+)["']/i);
+  if (moveMatch?.[1]) return moveMatch[1].trim();
+  const atomicMatch = trimmed.match(/^\[AtomicParsley\]\s+.*?["']([^"']+)["']/i);
+  if (atomicMatch?.[1]) return atomicMatch[1].trim();
+  const destIdx = trimmed.indexOf("Destination:");
+  if (destIdx >= 0) {
+    const rawDest = trimmed.slice(destIdx + "Destination:".length).trim();
+    const cleanedDest = rawDest.replace(/^["']|["']$/g, "").trim();
+    if (cleanedDest) return cleanedDest;
+  }
+  const alreadyMatch = trimmed.match(/^\[download\]\s+["']?([^\r\n"']+?)["']?\s+has already been downloaded/i);
+  if (alreadyMatch?.[1]) return alreadyMatch[1].trim();
+  return void 0;
+}
+function extractSavedFilePath(rawLog) {
+  const log = rawLog.trim();
+  if (!log) return void 0;
+  const lines = log.split(/\r?\n/).reverse();
+  for (const line of lines) {
+    const candidate = extractCandidateFromLine(line);
+    if (candidate) {
+      return candidate.replace(/^["']|["']$/g, "").trim();
+    }
+  }
+  return void 0;
+}
+function classifyYtDlpExit(exitCode, stderr) {
+  const txt = stderr.toLowerCase();
+  if (/(http error 429|too many requests|rate.?limit)/.test(txt))
+    return virtualError("http-429", stderr || `yt-dlp exited ${exitCode}`);
+  if (/(login required|requires (?:cookies|authentication)|sign in to confirm)/.test(txt))
+    return virtualError("auth-required", stderr || `yt-dlp exited ${exitCode}`);
+  if (/(not available in your country|geo.?restricted|geographic)/.test(txt))
+    return virtualError("geo-blocked", stderr || `yt-dlp exited ${exitCode}`);
+  if (/(video unavailable|not found|404)/.test(txt))
+    return virtualError("not-found", stderr || `yt-dlp exited ${exitCode}`);
+  if (/(no space left|disk full|enospc)/.test(txt))
+    return virtualError("disk-full", stderr || `yt-dlp exited ${exitCode}`);
+  if (/(permission denied|eacces)/.test(txt))
+    return virtualError("permission-denied", stderr || `yt-dlp exited ${exitCode}`);
+  if (/(ffmpeg|ffprobe)/.test(txt))
+    return virtualError("ffmpeg", stderr || `yt-dlp exited ${exitCode}`);
+  if (/(network|timeout|econnreset|enotfound|ehostunreach)/.test(txt))
+    return virtualError("network-transient", stderr || `yt-dlp exited ${exitCode}`);
+  return virtualError("unknown", stderr || `yt-dlp exited with code ${exitCode ?? -1}`);
+}
+function createTailBuffer(maxBytes) {
+  let buf = "";
+  return {
+    append(text2) {
+      buf += text2;
+      if (buf.length > maxBytes * 4) {
+        buf = buf.slice(buf.length - maxBytes);
+      }
+    },
+    read() {
+      return buf.length > maxBytes ? buf.slice(buf.length - maxBytes) : buf;
+    }
+  };
+}
+var require2, YTDlpWrapModule, YTDlpWrapCtor, DEFAULT_KILL_GRACE_MS, STDOUT_TAIL_BYTES, STDERR_TAIL_BYTES2, PROCESSING_DETECT_PATTERNS, FFMPEG_NOT_FOUND_ERROR, YtDlpExecutor;
+var init_yt_dlp_executor = __esm({
+  "../../packages/downloader-core/src/yt-dlp-executor.ts"() {
+    "use strict";
+    init_process();
+    init_src();
+    init_yt_dlp_args();
+    require2 = createRequire(import.meta.url);
+    YTDlpWrapModule = require2("yt-dlp-wrap-plus");
+    YTDlpWrapCtor = YTDlpWrapModule.default ?? YTDlpWrapModule;
+    DEFAULT_KILL_GRACE_MS = 1e4;
+    STDOUT_TAIL_BYTES = 8 * 1024;
+    STDERR_TAIL_BYTES2 = 8 * 1024;
+    PROCESSING_DETECT_PATTERNS = [
+      /\bMerging formats?\b/i,
+      /^\[Postprocess\]/m,
+      /\b(?:Embedding|Adding|Fixing|Converting|Remuxing)\b/i,
+      /\b(?:ExtractAudio|VideoConvertor|VideoRemuxer|Fixup\w+|Metadata|EmbedSubtitle|EmbedThumbnail|ModifyChapters|AtomicParsley|MoveFiles|FFmpeg)\b/i
+    ];
+    FFMPEG_NOT_FOUND_ERROR = "ffmpeg/ffprobe not found. Use Desktop resources/ffmpeg, install in PATH, or set FFMPEG_PATH.";
+    YtDlpExecutor = class {
+      opts;
+      cachedYtDlp = null;
+      cachedYtDlpPath = null;
+      constructor(options) {
+        this.opts = {
+          resolveYtDlpPath: options.resolveYtDlpPath,
+          resolveFfmpegLocation: options.resolveFfmpegLocation,
+          defaultDownloadDir: options.defaultDownloadDir,
+          defaultRuntimeSettings: options.defaultRuntimeSettings ?? {},
+          extraArgs: options.extraArgs,
+          buildArgs: options.buildArgs,
+          killGraceMs: options.killGraceMs ?? DEFAULT_KILL_GRACE_MS,
+          clock: options.clock ?? Date.now,
+          spawnFn: options.spawnFn
+        };
+      }
+      run(ctx, events) {
+        const stdoutTail = createTailBuffer(STDOUT_TAIL_BYTES);
+        const stderrTail = createTailBuffer(STDERR_TAIL_BYTES2);
+        let postprocessSeen = false;
+        let settled = false;
+        let cancelRequested = false;
+        let killTimer = null;
+        let proc = null;
+        let formatIdSeen;
+        let filePathSeen;
+        const finishOnce = (e) => {
+          if (settled) return;
+          settled = true;
+          if (killTimer) {
+            clearTimeout(killTimer);
+            killTimer = null;
+          }
+          events.onFinish(e);
+        };
+        let args;
+        try {
+          args = this.buildArgsFor(ctx.input);
+        } catch (err) {
+          const error48 = virtualError("unknown", String(err instanceof Error ? err.message : err));
+          finishOnce({
+            taskId: ctx.taskId,
+            attemptId: ctx.attemptId,
+            result: { type: "error", error: error48, exitCode: null },
+            closedAt: this.opts.clock(),
+            stdoutTail: "",
+            stderrTail: String(err instanceof Error ? err.message : err)
+          });
+          return makeNoopRun();
+        }
+        const ffmpegLocation = this.opts.resolveFfmpegLocation();
+        if (!ffmpegLocation) {
+          finishOnce({
+            taskId: ctx.taskId,
+            attemptId: ctx.attemptId,
+            result: {
+              type: "error",
+              error: virtualError("binary-missing", FFMPEG_NOT_FOUND_ERROR),
+              exitCode: null
+            },
+            closedAt: this.opts.clock(),
+            stdoutTail: "",
+            stderrTail: FFMPEG_NOT_FOUND_ERROR
+          });
+          return makeNoopRun();
+        }
+        insertFfmpegLocation(args, ffmpegLocation);
+        const controller = new AbortController();
+        let ytDlpPath;
+        try {
+          ytDlpPath = this.opts.resolveYtDlpPath();
+        } catch (err) {
+          finishOnce({
+            taskId: ctx.taskId,
+            attemptId: ctx.attemptId,
+            result: {
+              type: "error",
+              error: virtualError("binary-missing", String(err instanceof Error ? err.message : err)),
+              exitCode: null
+            },
+            closedAt: this.opts.clock(),
+            stdoutTail: "",
+            stderrTail: String(err instanceof Error ? err.message : err)
+          });
+          return makeNoopRun();
+        }
+        try {
+          proc = this.opts.spawnFn ? this.opts.spawnFn(ytDlpPath, args, controller.signal) : this.getYtDlp(ytDlpPath).exec(args, { signal: controller.signal });
+        } catch (err) {
+          finishOnce({
+            taskId: ctx.taskId,
+            attemptId: ctx.attemptId,
+            result: {
+              type: "error",
+              error: virtualError("unknown", String(err instanceof Error ? err.message : err)),
+              exitCode: null
+            },
+            closedAt: this.opts.clock(),
+            stdoutTail: stdoutTail.read(),
+            stderrTail: stderrTail.read()
+          });
+          return makeNoopRun();
+        }
+        const pid = proc.ytDlpProcess?.pid ?? -1;
+        events.onSpawn({
+          taskId: ctx.taskId,
+          attemptId: ctx.attemptId,
+          pid,
+          pidStartedAt: null,
+          kind: "yt-dlp",
+          spawnedAt: this.opts.clock()
+        });
+        let stdoutRemainder = "";
+        let stderrRemainder = "";
+        const pumpStdoutPostprocess = (chunk) => {
+          const text2 = chunk.toString();
+          stdoutTail.append(text2);
+          if (!postprocessSeen && hasPostprocessSignal(text2)) {
+            postprocessSeen = true;
+          }
+          const fid = extractFormatId(text2);
+          if (fid) {
+            formatIdSeen = fid;
+          }
+          const combined = stdoutRemainder + text2;
+          const lines = combined.split(/\r?\n/);
+          stdoutRemainder = lines.pop() ?? "";
+          for (const line of lines) {
+            const fp = extractCandidateFromLine(line);
+            if (fp) {
+              filePathSeen = fp;
+            }
+          }
+        };
+        const pumpStderrPostprocess = (chunk) => {
+          const text2 = chunk.toString();
+          stderrTail.append(text2);
+          if (!postprocessSeen && hasPostprocessSignal(text2)) {
+            postprocessSeen = true;
+          }
+          const combined = stderrRemainder + text2;
+          const lines = combined.split(/\r?\n/);
+          stderrRemainder = lines.pop() ?? "";
+          for (const line of lines) {
+            const fp = extractCandidateFromLine(line);
+            if (fp) {
+              filePathSeen = fp;
+            }
+          }
+          events.onStd({
+            taskId: ctx.taskId,
+            attemptId: ctx.attemptId,
+            stream: "stderr",
+            line: text2.replace(/\r?\n$/, "")
+          });
+        };
+        proc.ytDlpProcess?.stdout?.on("data", (chunk) => {
+          pumpStdoutPostprocess(chunk);
+          events.onStd({
+            taskId: ctx.taskId,
+            attemptId: ctx.attemptId,
+            stream: "stdout",
+            line: chunk.toString().replace(/\r?\n$/, "")
+          });
+        });
+        proc.ytDlpProcess?.stderr?.on("data", pumpStderrPostprocess);
+        proc.on("progress", (payload) => {
+          const progress = mapProgress(payload);
+          events.onProgress({
+            taskId: ctx.taskId,
+            attemptId: ctx.attemptId,
+            progress,
+            enteredProcessing: postprocessSeen
+          });
+        });
+        proc.on("close", (code) => {
+          const closedAt = this.opts.clock();
+          const stdout = stdoutTail.read();
+          const stderr = stderrTail.read();
+          if (stdoutRemainder) {
+            const fp = extractCandidateFromLine(stdoutRemainder);
+            if (fp) filePathSeen = fp;
+          }
+          if (stderrRemainder) {
+            const fp = extractCandidateFromLine(stderrRemainder);
+            if (fp) filePathSeen = fp;
+          }
+          if (cancelRequested) {
+            finishOnce({
+              taskId: ctx.taskId,
+              attemptId: ctx.attemptId,
+              result: { type: "cancelled" },
+              closedAt,
+              stdoutTail: stdout,
+              stderrTail: stderr
+            });
+            return;
+          }
+          if (code === 0) {
+            let filePath = extractSavedFilePath(stdout) || filePathSeen || "";
+            if (filePath && !path2.isAbsolute(filePath)) {
+              const downloadDirOption = typeof ctx.input.options?.downloadDir === "string" ? ctx.input.options.downloadDir : void 0;
+              const baseDir = downloadDirOption || (typeof this.opts.defaultDownloadDir === "string" ? this.opts.defaultDownloadDir : process.cwd());
+              filePath = path2.resolve(baseDir, filePath);
+            }
+            let realSize = 0;
+            if (filePath) {
+              try {
+                if (existsSync5(filePath)) realSize = statSync3(filePath).size;
+              } catch {
+              }
+            }
+            const output = {
+              filePath,
+              size: realSize,
+              durationMs: null,
+              sha256: null,
+              // Prefer the streaming sniff (captures even if pushed out of the
+              // tail buffer); fall back to a tail re-scan when running with
+              // tiny test fixtures whose entire run fits in 8KB.
+              formatId: formatIdSeen ?? extractFormatId(stdout) ?? null
+            };
+            finishOnce({
+              taskId: ctx.taskId,
+              attemptId: ctx.attemptId,
+              result: { type: "success", output },
+              closedAt,
+              stdoutTail: stdout,
+              stderrTail: stderr
+            });
+            return;
+          }
+          const error48 = classifyYtDlpExit(code, stderr);
+          finishOnce({
+            taskId: ctx.taskId,
+            attemptId: ctx.attemptId,
+            result: { type: "error", error: error48, exitCode: code ?? null },
+            closedAt,
+            stdoutTail: stdout,
+            stderrTail: stderr
+          });
+        });
+        proc.on("error", (err) => {
+          const closedAt = this.opts.clock();
+          if (cancelRequested) {
+            finishOnce({
+              taskId: ctx.taskId,
+              attemptId: ctx.attemptId,
+              result: { type: "cancelled" },
+              closedAt,
+              stdoutTail: stdoutTail.read(),
+              stderrTail: stderrTail.read()
+            });
+            return;
+          }
+          const error48 = virtualError("unknown", err.message);
+          finishOnce({
+            taskId: ctx.taskId,
+            attemptId: ctx.attemptId,
+            result: { type: "error", error: error48, exitCode: null },
+            closedAt,
+            stdoutTail: stdoutTail.read(),
+            stderrTail: stderrTail.read()
+          });
+        });
+        const cancel = async (timeout) => {
+          if (settled) return;
+          cancelRequested = true;
+          const grace = timeout ?? this.opts.killGraceMs;
+          try {
+            controller.abort();
+          } catch {
+          }
+          try {
+            killProcessTree(proc?.ytDlpProcess?.pid, "SIGTERM");
+          } catch {
+          }
+          if (killTimer) clearTimeout(killTimer);
+          if (grace > 0) {
+            killTimer = setTimeout(() => {
+              try {
+                killProcessTree(proc?.ytDlpProcess?.pid, "SIGKILL");
+              } catch {
+              }
+            }, grace);
+          } else {
+            try {
+              killProcessTree(proc?.ytDlpProcess?.pid, "SIGKILL");
+            } catch {
+            }
+          }
+        };
+        return {
+          cancel,
+          pause: () => cancel(this.opts.killGraceMs)
+        };
+      }
+      buildArgsFor(input) {
+        if (this.opts.buildArgs) return this.opts.buildArgs(input, this.opts.defaultDownloadDir);
+        if (input.rawArgs && input.rawArgs.length > 0) {
+          return [...input.rawArgs];
+        }
+        const opts = input.options ?? {};
+        const type = opts.type ?? (input.kind === "audio" ? "audio" : "video");
+        const settings = {
+          ...this.opts.defaultRuntimeSettings,
+          ...opts.settings ?? {}
+        };
+        const downloadPath = opts.customDownloadPath?.trim() || settings.downloadPath?.trim() || this.opts.defaultDownloadDir;
+        const merged = { ...settings, downloadPath };
+        const extra = this.opts.extraArgs ? [...this.opts.extraArgs()] : [];
+        return buildDownloadArgs(
+          {
+            url: input.url,
+            type,
+            format: opts.format,
+            audioFormat: opts.audioFormat,
+            audioFormatIds: opts.audioFormatIds ? [...opts.audioFormatIds] : void 0,
+            startTime: opts.startTime,
+            endTime: opts.endTime,
+            customDownloadPath: opts.customDownloadPath,
+            customFilenameTemplate: opts.customFilenameTemplate,
+            containerFormat: opts.containerFormat
+          },
+          this.opts.defaultDownloadDir,
+          merged,
+          extra
+        );
+      }
+      /** Diagnostic: return the resolved argv yt-dlp would be invoked with. */
+      describeCommandFor(input) {
+        return formatYtDlpCommand(this.buildArgsFor(input));
+      }
+      getYtDlp(binaryPath) {
+        if (this.cachedYtDlp && this.cachedYtDlpPath === binaryPath) return this.cachedYtDlp;
+        this.cachedYtDlp = new YTDlpWrapCtor(binaryPath);
+        this.cachedYtDlpPath = binaryPath;
+        return this.cachedYtDlp;
+      }
+    };
+  }
+});
+
 // ../../packages/downloader-core/src/downloader-core.ts
 import { execSync } from "node:child_process";
 import { randomUUID as randomUUID2 } from "node:crypto";
 import { EventEmitter } from "node:events";
 import fs from "node:fs";
-import { createRequire } from "node:module";
+import { createRequire as createRequire2 } from "node:module";
 import os2 from "node:os";
-import path2 from "node:path";
+import path3 from "node:path";
 import { fileURLToPath } from "node:url";
-var require2, YTDlpWrapModule, YTDlpWrapCtor, DEFAULT_DOWNLOAD_DIR, DEFAULT_MAX_CONCURRENT, MAX_TASK_LOG_LENGTH, FFMPEG_NOT_FOUND_ERROR, MODULE_DIR, REPO_ROOT_FROM_MODULE, getDesktopResourcesDirs, ensureExecutable, resolveBundledYtDlpPath, resolveBundledFfmpegLocation, tryCommandPath, resolveYtDlpPath, resolveFfmpegLocation, resolveJsRuntimePath, resolveJsRuntimeArgs, clampPercent, toOptionalNumber, toOptionalString, toOptionalStringArray, toTerminal, isHttpUrl, resolvePlaylistEntryUrl, trimTaskLog, extractSavedFilePath, cloneVideoFormat, cloneTask, DownloaderCore;
+var require3, YTDlpWrapModule2, YTDlpWrapCtor2, DEFAULT_DOWNLOAD_DIR, DEFAULT_MAX_CONCURRENT, MAX_TASK_LOG_LENGTH, FFMPEG_NOT_FOUND_ERROR2, MODULE_DIR, REPO_ROOT_FROM_MODULE, getDesktopResourcesDirs, ensureExecutable, resolveBundledYtDlpPath, resolveBundledFfmpegLocation, tryCommandPath, resolveYtDlpPath, resolveFfmpegLocation, resolveJsRuntimePath, resolveJsRuntimeArgs, clampPercent, toOptionalNumber, toOptionalString, toOptionalStringArray, toTerminal, isHttpUrl, resolvePlaylistEntryUrl, trimTaskLog, cloneVideoFormat, cloneTask, DownloaderCore;
 var init_downloader_core = __esm({
   "../../packages/downloader-core/src/downloader-core.ts"() {
     "use strict";
     init_yt_dlp_args();
-    require2 = createRequire(import.meta.url);
-    YTDlpWrapModule = require2("yt-dlp-wrap-plus");
-    YTDlpWrapCtor = YTDlpWrapModule.default ?? YTDlpWrapModule;
-    DEFAULT_DOWNLOAD_DIR = path2.join(os2.homedir(), "Downloads", "VidBee");
+    init_yt_dlp_executor();
+    require3 = createRequire2(import.meta.url);
+    YTDlpWrapModule2 = require3("yt-dlp-wrap-plus");
+    YTDlpWrapCtor2 = YTDlpWrapModule2.default ?? YTDlpWrapModule2;
+    DEFAULT_DOWNLOAD_DIR = path3.join(os2.homedir(), "Downloads", "VidBee");
     DEFAULT_MAX_CONCURRENT = 3;
     MAX_TASK_LOG_LENGTH = 8e4;
-    FFMPEG_NOT_FOUND_ERROR = "ffmpeg/ffprobe not found. Use Desktop resources/ffmpeg, install in PATH, or set FFMPEG_PATH.";
-    MODULE_DIR = path2.dirname(fileURLToPath(import.meta.url));
-    REPO_ROOT_FROM_MODULE = path2.resolve(MODULE_DIR, "../../..");
+    FFMPEG_NOT_FOUND_ERROR2 = "ffmpeg/ffprobe not found. Use Desktop resources/ffmpeg, install in PATH, or set FFMPEG_PATH.";
+    MODULE_DIR = path3.dirname(fileURLToPath(import.meta.url));
+    REPO_ROOT_FROM_MODULE = path3.resolve(MODULE_DIR, "../../..");
     getDesktopResourcesDirs = () => {
       const dirs = [];
       const cwd = process.cwd();
-      dirs.push(path2.join(cwd, "resources"));
-      dirs.push(path2.join(cwd, "apps", "desktop", "resources"));
-      dirs.push(path2.resolve(cwd, "..", "desktop", "resources"));
-      dirs.push(path2.join(REPO_ROOT_FROM_MODULE, "resources"));
-      dirs.push(path2.join(REPO_ROOT_FROM_MODULE, "apps", "desktop", "resources"));
+      dirs.push(path3.join(cwd, "resources"));
+      dirs.push(path3.join(cwd, "apps", "desktop", "resources"));
+      dirs.push(path3.resolve(cwd, "..", "desktop", "resources"));
+      dirs.push(path3.join(REPO_ROOT_FROM_MODULE, "resources"));
+      dirs.push(path3.join(REPO_ROOT_FROM_MODULE, "apps", "desktop", "resources"));
       if (process.env.NODE_ENV === "development") {
-        dirs.push(path2.join(REPO_ROOT_FROM_MODULE, "apps", "desktop", "resources"));
+        dirs.push(path3.join(REPO_ROOT_FROM_MODULE, "apps", "desktop", "resources"));
       }
       const resourcesPath = process.resourcesPath;
       if (resourcesPath) {
-        dirs.push(path2.join(resourcesPath, "app.asar.unpacked", "resources"));
-        dirs.push(path2.join(resourcesPath, "resources"));
+        dirs.push(path3.join(resourcesPath, "app.asar.unpacked", "resources"));
+        dirs.push(path3.join(resourcesPath, "resources"));
       }
       return Array.from(new Set(dirs));
     };
@@ -18418,7 +19006,7 @@ var init_downloader_core = __esm({
     resolveBundledYtDlpPath = () => {
       const binaryName = process.platform === "win32" ? "yt-dlp.exe" : process.platform === "darwin" ? "yt-dlp_macos" : "yt-dlp_linux";
       for (const resourcesDir of getDesktopResourcesDirs()) {
-        const candidate = path2.join(resourcesDir, binaryName);
+        const candidate = path3.join(resourcesDir, binaryName);
         if (!fs.existsSync(candidate)) {
           continue;
         }
@@ -18431,9 +19019,9 @@ var init_downloader_core = __esm({
       const ffmpegBinaryName = process.platform === "win32" ? "ffmpeg.exe" : "ffmpeg";
       const ffprobeBinaryName = process.platform === "win32" ? "ffprobe.exe" : "ffprobe";
       for (const resourcesDir of getDesktopResourcesDirs()) {
-        const candidateDir = path2.join(resourcesDir, "ffmpeg");
-        const ffmpegPath = path2.join(candidateDir, ffmpegBinaryName);
-        const ffprobePath = path2.join(candidateDir, ffprobeBinaryName);
+        const candidateDir = path3.join(resourcesDir, "ffmpeg");
+        const ffmpegPath = path3.join(candidateDir, ffmpegBinaryName);
+        const ffprobePath = path3.join(candidateDir, ffprobeBinaryName);
         if (!fs.existsSync(ffmpegPath) || !fs.existsSync(ffprobePath)) {
           continue;
         }
@@ -18471,8 +19059,8 @@ var init_downloader_core = __esm({
       const ffmpegBinaryName = process.platform === "win32" ? "ffmpeg.exe" : "ffmpeg";
       const ffprobeBinaryName = process.platform === "win32" ? "ffprobe.exe" : "ffprobe";
       const resolveFromDirectory = (directory) => {
-        const ffmpegPath = path2.join(directory, ffmpegBinaryName);
-        const ffprobePath = path2.join(directory, ffprobeBinaryName);
+        const ffmpegPath = path3.join(directory, ffmpegBinaryName);
+        const ffprobePath = path3.join(directory, ffprobeBinaryName);
         if (!fs.existsSync(ffmpegPath) || !fs.existsSync(ffprobePath)) {
           return void 0;
         }
@@ -18486,16 +19074,16 @@ var init_downloader_core = __esm({
         if (stats.isDirectory()) {
           return resolveFromDirectory(envPath);
         }
-        const candidateDir = path2.dirname(envPath);
+        const candidateDir = path3.dirname(envPath);
         return resolveFromDirectory(candidateDir);
       }
       if (ytDlpPath) {
-        const ytDlpDir = path2.dirname(ytDlpPath);
+        const ytDlpDir = path3.dirname(ytDlpPath);
         const sameDirResolved = resolveFromDirectory(ytDlpDir);
         if (sameDirResolved) {
           return sameDirResolved;
         }
-        const siblingDirResolved = resolveFromDirectory(path2.join(ytDlpDir, "ffmpeg"));
+        const siblingDirResolved = resolveFromDirectory(path3.join(ytDlpDir, "ffmpeg"));
         if (siblingDirResolved) {
           return siblingDirResolved;
         }
@@ -18506,7 +19094,7 @@ var init_downloader_core = __esm({
       }
       const commandPath = tryCommandPath("ffmpeg");
       if (commandPath) {
-        const resolved = resolveFromDirectory(path2.dirname(commandPath));
+        const resolved = resolveFromDirectory(path3.dirname(commandPath));
         if (resolved) {
           return resolved;
         }
@@ -18544,7 +19132,7 @@ var init_downloader_core = __esm({
       }
       for (const resourcesDir of getDesktopResourcesDirs()) {
         for (const candidateName of runtimeCandidates) {
-          const candidatePath = path2.join(resourcesDir, candidateName);
+          const candidatePath = path3.join(resourcesDir, candidateName);
           if (!fs.existsSync(candidatePath)) {
             continue;
           }
@@ -18641,37 +19229,6 @@ var init_downloader_core = __esm({
       }
       return value2.slice(value2.length - MAX_TASK_LOG_LENGTH);
     };
-    extractSavedFilePath = (rawLog) => {
-      const log = rawLog.trim();
-      if (!log) {
-        return void 0;
-      }
-      const quotedPatterns = [
-        /Merging formats into "([^"]+)"/g,
-        /Destination:\s+"([^"]+)"/g,
-        /Destination:\s+'([^']+)'/g,
-        /\[download\]\s+([^\r\n]+?)\s+has already been downloaded/g
-      ];
-      for (const pattern of quotedPatterns) {
-        const matches = Array.from(log.matchAll(pattern));
-        const lastMatch = matches.at(-1);
-        const candidate = lastMatch?.[1]?.trim();
-        if (candidate) {
-          return candidate;
-        }
-      }
-      const lines = log.split(/\r?\n/).reverse();
-      for (const line of lines) {
-        const destinationIndex = line.indexOf("Destination:");
-        if (destinationIndex >= 0) {
-          const candidate = line.slice(destinationIndex + "Destination:".length).trim();
-          if (candidate) {
-            return candidate;
-          }
-        }
-      }
-      return void 0;
-    };
     cloneVideoFormat = (format) => {
       if (!format) {
         return void 0;
@@ -18714,7 +19271,7 @@ var init_downloader_core = __esm({
         if (this.ffmpegLocation) {
           process.env.FFMPEG_PATH = this.ffmpegLocation;
         }
-        this.ytdlp = new YTDlpWrapCtor(ytDlpPath);
+        this.ytdlp = new YTDlpWrapCtor2(ytDlpPath);
       }
       getYtDlp() {
         if (!this.ytdlp) {
@@ -19003,7 +19560,7 @@ var init_downloader_core = __esm({
           this.updateTask(nextId, {
             status: "error",
             completedAt: Date.now(),
-            error: FFMPEG_NOT_FOUND_ERROR
+            error: FFMPEG_NOT_FOUND_ERROR2
           });
           this.processQueue();
           return;
@@ -19057,8 +19614,8 @@ var init_downloader_core = __esm({
           };
           const filePath = extractSavedFilePath(taskLog);
           if (filePath) {
-            finalPatch.savedFileName = path2.basename(filePath);
-            finalPatch.downloadPath = path2.dirname(filePath);
+            finalPatch.savedFileName = path3.basename(filePath);
+            finalPatch.downloadPath = path3.dirname(filePath);
           } else {
             finalPatch.downloadPath = resolvedDownloadPath;
           }
@@ -19171,459 +19728,6 @@ var init_downloader_core = __esm({
   }
 });
 
-// ../../packages/downloader-core/src/yt-dlp-executor.ts
-import { existsSync as existsSync4, statSync as statSync3 } from "node:fs";
-import { createRequire as createRequire2 } from "node:module";
-function makeNoopRun() {
-  return {
-    cancel: async () => {
-    },
-    pause: async () => {
-    }
-  };
-}
-function insertFfmpegLocation(args, ffmpegLocation) {
-  const urlArg = args.pop();
-  args.push("--ffmpeg-location", ffmpegLocation);
-  if (urlArg !== void 0) args.push(urlArg);
-}
-function mapProgress(payload) {
-  const percent = typeof payload.percent === "number" && !Number.isNaN(payload.percent) ? Math.max(0, Math.min(1, payload.percent / 100)) : null;
-  return {
-    percent,
-    bytesDownloaded: parseSize(payload.downloaded),
-    bytesTotal: parseSize(payload.total),
-    speedBps: parseSpeed(payload.currentSpeed),
-    etaMs: parseEtaMs(payload.eta),
-    ticks: 0
-  };
-}
-function parseSize(value2) {
-  if (!value2) return null;
-  const m = /([0-9]+(?:\.[0-9]+)?)\s*(B|KB|KiB|MB|MiB|GB|GiB|TB|TiB)/i.exec(value2);
-  if (!m) return null;
-  const n = Number.parseFloat(m[1] ?? "");
-  if (!Number.isFinite(n)) return null;
-  const unit = (m[2] ?? "B").toLowerCase();
-  const factor = unit === "kb" || unit === "kib" ? 1024 : unit === "mb" || unit === "mib" ? 1024 ** 2 : unit === "gb" || unit === "gib" ? 1024 ** 3 : unit === "tb" || unit === "tib" ? 1024 ** 4 : 1;
-  return Math.round(n * factor);
-}
-function parseSpeed(value2) {
-  if (!value2) return null;
-  const cleaned = value2.replace(/\/s$/i, "").trim();
-  return parseSize(cleaned);
-}
-function parseEtaMs(value2) {
-  if (!value2) return null;
-  const trimmed = value2.trim();
-  if (!trimmed || trimmed === "Unknown") return null;
-  const parts = trimmed.split(":").map((p) => Number.parseInt(p, 10));
-  if (parts.some((n) => !Number.isFinite(n))) return null;
-  let seconds = 0;
-  for (const p of parts) seconds = seconds * 60 + p;
-  return seconds * 1e3;
-}
-function hasPostprocessSignal(text2) {
-  return PROCESSING_DETECT_PATTERNS.some((re) => re.test(text2));
-}
-function extractFormatId(rawLog) {
-  const log = rawLog.trim();
-  if (!log) return void 0;
-  const re = /Downloading\s+\d+\s+format\(s\):\s+([^\r\n]+)/gi;
-  const matches = Array.from(log.matchAll(re));
-  const last = matches.at(-1);
-  const value2 = last?.[1]?.trim();
-  if (!value2) return void 0;
-  return value2;
-}
-function extractSavedFilePath2(rawLog) {
-  const log = rawLog.trim();
-  if (!log) return void 0;
-  const patterns = [
-    /Merging formats into "([^"]+)"/g,
-    /Destination:\s+"([^"]+)"/g,
-    /Destination:\s+'([^']+)'/g,
-    /\[download\]\s+([^\r\n]+?)\s+has already been downloaded/g
-  ];
-  for (const re of patterns) {
-    const matches = Array.from(log.matchAll(re));
-    const last = matches.at(-1);
-    const candidate = last?.[1]?.trim();
-    if (candidate) return candidate;
-  }
-  const lines = log.split(/\r?\n/).reverse();
-  for (const line of lines) {
-    const idx = line.indexOf("Destination:");
-    if (idx >= 0) {
-      const candidate = line.slice(idx + "Destination:".length).trim();
-      if (candidate) return candidate;
-    }
-  }
-  return void 0;
-}
-function classifyYtDlpExit(exitCode, stderr) {
-  const txt = stderr.toLowerCase();
-  if (/(http error 429|too many requests|rate.?limit)/.test(txt))
-    return virtualError("http-429", stderr || `yt-dlp exited ${exitCode}`);
-  if (/(login required|requires (?:cookies|authentication)|sign in to confirm)/.test(txt))
-    return virtualError("auth-required", stderr || `yt-dlp exited ${exitCode}`);
-  if (/(not available in your country|geo.?restricted|geographic)/.test(txt))
-    return virtualError("geo-blocked", stderr || `yt-dlp exited ${exitCode}`);
-  if (/(video unavailable|not found|404)/.test(txt))
-    return virtualError("not-found", stderr || `yt-dlp exited ${exitCode}`);
-  if (/(no space left|disk full|enospc)/.test(txt))
-    return virtualError("disk-full", stderr || `yt-dlp exited ${exitCode}`);
-  if (/(permission denied|eacces)/.test(txt))
-    return virtualError("permission-denied", stderr || `yt-dlp exited ${exitCode}`);
-  if (/(ffmpeg|ffprobe)/.test(txt))
-    return virtualError("ffmpeg", stderr || `yt-dlp exited ${exitCode}`);
-  if (/(network|timeout|econnreset|enotfound|ehostunreach)/.test(txt))
-    return virtualError("network-transient", stderr || `yt-dlp exited ${exitCode}`);
-  return virtualError("unknown", stderr || `yt-dlp exited with code ${exitCode ?? -1}`);
-}
-function createTailBuffer(maxBytes) {
-  let buf = "";
-  return {
-    append(text2) {
-      buf += text2;
-      if (buf.length > maxBytes * 4) {
-        buf = buf.slice(buf.length - maxBytes);
-      }
-    },
-    read() {
-      return buf.length > maxBytes ? buf.slice(buf.length - maxBytes) : buf;
-    }
-  };
-}
-var require3, YTDlpWrapModule2, YTDlpWrapCtor2, DEFAULT_KILL_GRACE_MS, STDOUT_TAIL_BYTES, STDERR_TAIL_BYTES2, PROCESSING_DETECT_PATTERNS, FFMPEG_NOT_FOUND_ERROR2, YtDlpExecutor;
-var init_yt_dlp_executor = __esm({
-  "../../packages/downloader-core/src/yt-dlp-executor.ts"() {
-    "use strict";
-    init_src();
-    init_yt_dlp_args();
-    require3 = createRequire2(import.meta.url);
-    YTDlpWrapModule2 = require3("yt-dlp-wrap-plus");
-    YTDlpWrapCtor2 = YTDlpWrapModule2.default ?? YTDlpWrapModule2;
-    DEFAULT_KILL_GRACE_MS = 1e4;
-    STDOUT_TAIL_BYTES = 8 * 1024;
-    STDERR_TAIL_BYTES2 = 8 * 1024;
-    PROCESSING_DETECT_PATTERNS = [
-      /\bMerging formats?\b/i,
-      /^\[Postprocess\]/m,
-      /\b(?:Embedding|Adding|Fixing|Converting)\b/i,
-      /\b(?:ExtractAudio|VideoConvertor|FFmpeg)\b/i
-    ];
-    FFMPEG_NOT_FOUND_ERROR2 = "ffmpeg/ffprobe not found. Use Desktop resources/ffmpeg, install in PATH, or set FFMPEG_PATH.";
-    YtDlpExecutor = class {
-      opts;
-      cachedYtDlp = null;
-      cachedYtDlpPath = null;
-      constructor(options) {
-        this.opts = {
-          resolveYtDlpPath: options.resolveYtDlpPath,
-          resolveFfmpegLocation: options.resolveFfmpegLocation,
-          defaultDownloadDir: options.defaultDownloadDir,
-          defaultRuntimeSettings: options.defaultRuntimeSettings ?? {},
-          extraArgs: options.extraArgs,
-          buildArgs: options.buildArgs,
-          killGraceMs: options.killGraceMs ?? DEFAULT_KILL_GRACE_MS,
-          clock: options.clock ?? Date.now,
-          spawnFn: options.spawnFn
-        };
-      }
-      run(ctx, events) {
-        const stdoutTail = createTailBuffer(STDOUT_TAIL_BYTES);
-        const stderrTail = createTailBuffer(STDERR_TAIL_BYTES2);
-        let postprocessSeen = false;
-        let settled = false;
-        let cancelRequested = false;
-        let killTimer = null;
-        let proc = null;
-        let formatIdSeen;
-        const finishOnce = (e) => {
-          if (settled) return;
-          settled = true;
-          if (killTimer) {
-            clearTimeout(killTimer);
-            killTimer = null;
-          }
-          events.onFinish(e);
-        };
-        let args;
-        try {
-          args = this.buildArgsFor(ctx.input);
-        } catch (err) {
-          const error48 = virtualError("unknown", String(err instanceof Error ? err.message : err));
-          finishOnce({
-            taskId: ctx.taskId,
-            attemptId: ctx.attemptId,
-            result: { type: "error", error: error48, exitCode: null },
-            closedAt: this.opts.clock(),
-            stdoutTail: "",
-            stderrTail: String(err instanceof Error ? err.message : err)
-          });
-          return makeNoopRun();
-        }
-        const ffmpegLocation = this.opts.resolveFfmpegLocation();
-        if (!ffmpegLocation) {
-          finishOnce({
-            taskId: ctx.taskId,
-            attemptId: ctx.attemptId,
-            result: {
-              type: "error",
-              error: virtualError("binary-missing", FFMPEG_NOT_FOUND_ERROR2),
-              exitCode: null
-            },
-            closedAt: this.opts.clock(),
-            stdoutTail: "",
-            stderrTail: FFMPEG_NOT_FOUND_ERROR2
-          });
-          return makeNoopRun();
-        }
-        insertFfmpegLocation(args, ffmpegLocation);
-        const controller = new AbortController();
-        let ytDlpPath;
-        try {
-          ytDlpPath = this.opts.resolveYtDlpPath();
-        } catch (err) {
-          finishOnce({
-            taskId: ctx.taskId,
-            attemptId: ctx.attemptId,
-            result: {
-              type: "error",
-              error: virtualError("binary-missing", String(err instanceof Error ? err.message : err)),
-              exitCode: null
-            },
-            closedAt: this.opts.clock(),
-            stdoutTail: "",
-            stderrTail: String(err instanceof Error ? err.message : err)
-          });
-          return makeNoopRun();
-        }
-        try {
-          proc = this.opts.spawnFn ? this.opts.spawnFn(ytDlpPath, args, controller.signal) : this.getYtDlp(ytDlpPath).exec(args, { signal: controller.signal });
-        } catch (err) {
-          finishOnce({
-            taskId: ctx.taskId,
-            attemptId: ctx.attemptId,
-            result: {
-              type: "error",
-              error: virtualError("unknown", String(err instanceof Error ? err.message : err)),
-              exitCode: null
-            },
-            closedAt: this.opts.clock(),
-            stdoutTail: stdoutTail.read(),
-            stderrTail: stderrTail.read()
-          });
-          return makeNoopRun();
-        }
-        const pid = proc.ytDlpProcess?.pid ?? -1;
-        events.onSpawn({
-          taskId: ctx.taskId,
-          attemptId: ctx.attemptId,
-          pid,
-          pidStartedAt: null,
-          kind: "yt-dlp",
-          spawnedAt: this.opts.clock()
-        });
-        const pumpStdoutPostprocess = (chunk) => {
-          const text2 = chunk.toString();
-          stdoutTail.append(text2);
-          if (!postprocessSeen && hasPostprocessSignal(text2)) {
-            postprocessSeen = true;
-          }
-          const fid = extractFormatId(text2);
-          if (fid) {
-            formatIdSeen = fid;
-          }
-        };
-        const pumpStderrPostprocess = (chunk) => {
-          const text2 = chunk.toString();
-          stderrTail.append(text2);
-          if (!postprocessSeen && hasPostprocessSignal(text2)) {
-            postprocessSeen = true;
-          }
-          events.onStd({
-            taskId: ctx.taskId,
-            attemptId: ctx.attemptId,
-            stream: "stderr",
-            line: text2.replace(/\r?\n$/, "")
-          });
-        };
-        proc.ytDlpProcess?.stdout?.on("data", (chunk) => {
-          pumpStdoutPostprocess(chunk);
-          events.onStd({
-            taskId: ctx.taskId,
-            attemptId: ctx.attemptId,
-            stream: "stdout",
-            line: chunk.toString().replace(/\r?\n$/, "")
-          });
-        });
-        proc.ytDlpProcess?.stderr?.on("data", pumpStderrPostprocess);
-        proc.on("progress", (payload) => {
-          const progress = mapProgress(payload);
-          events.onProgress({
-            taskId: ctx.taskId,
-            attemptId: ctx.attemptId,
-            progress,
-            enteredProcessing: postprocessSeen
-          });
-        });
-        proc.on("close", (code) => {
-          const closedAt = this.opts.clock();
-          const stdout = stdoutTail.read();
-          const stderr = stderrTail.read();
-          if (cancelRequested) {
-            finishOnce({
-              taskId: ctx.taskId,
-              attemptId: ctx.attemptId,
-              result: { type: "cancelled" },
-              closedAt,
-              stdoutTail: stdout,
-              stderrTail: stderr
-            });
-            return;
-          }
-          if (code === 0) {
-            const filePath = extractSavedFilePath2(stdout) || "";
-            let realSize = 0;
-            if (filePath) {
-              try {
-                if (existsSync4(filePath)) realSize = statSync3(filePath).size;
-              } catch {
-              }
-            }
-            const output = {
-              filePath,
-              size: realSize,
-              durationMs: null,
-              sha256: null,
-              // Prefer the streaming sniff (captures even if pushed out of the
-              // tail buffer); fall back to a tail re-scan when running with
-              // tiny test fixtures whose entire run fits in 8KB.
-              formatId: formatIdSeen ?? extractFormatId(stdout) ?? null
-            };
-            finishOnce({
-              taskId: ctx.taskId,
-              attemptId: ctx.attemptId,
-              result: { type: "success", output },
-              closedAt,
-              stdoutTail: stdout,
-              stderrTail: stderr
-            });
-            return;
-          }
-          const error48 = classifyYtDlpExit(code, stderr);
-          finishOnce({
-            taskId: ctx.taskId,
-            attemptId: ctx.attemptId,
-            result: { type: "error", error: error48, exitCode: code ?? null },
-            closedAt,
-            stdoutTail: stdout,
-            stderrTail: stderr
-          });
-        });
-        proc.on("error", (err) => {
-          const closedAt = this.opts.clock();
-          if (cancelRequested) {
-            finishOnce({
-              taskId: ctx.taskId,
-              attemptId: ctx.attemptId,
-              result: { type: "cancelled" },
-              closedAt,
-              stdoutTail: stdoutTail.read(),
-              stderrTail: stderrTail.read()
-            });
-            return;
-          }
-          const error48 = virtualError("unknown", err.message);
-          finishOnce({
-            taskId: ctx.taskId,
-            attemptId: ctx.attemptId,
-            result: { type: "error", error: error48, exitCode: null },
-            closedAt,
-            stdoutTail: stdoutTail.read(),
-            stderrTail: stderrTail.read()
-          });
-        });
-        const cancel = async (timeout) => {
-          if (settled) return;
-          cancelRequested = true;
-          const grace = timeout ?? this.opts.killGraceMs;
-          try {
-            controller.abort();
-          } catch {
-          }
-          try {
-            proc?.ytDlpProcess?.kill("SIGTERM");
-          } catch {
-          }
-          if (killTimer) clearTimeout(killTimer);
-          if (grace > 0) {
-            killTimer = setTimeout(() => {
-              try {
-                proc?.ytDlpProcess?.kill("SIGKILL");
-              } catch {
-              }
-            }, grace);
-          } else {
-            try {
-              proc?.ytDlpProcess?.kill("SIGKILL");
-            } catch {
-            }
-          }
-        };
-        return {
-          cancel,
-          pause: () => cancel(this.opts.killGraceMs)
-        };
-      }
-      buildArgsFor(input) {
-        if (this.opts.buildArgs) return this.opts.buildArgs(input, this.opts.defaultDownloadDir);
-        if (input.rawArgs && input.rawArgs.length > 0) {
-          return [...input.rawArgs];
-        }
-        const opts = input.options ?? {};
-        const type = opts.type ?? (input.kind === "audio" ? "audio" : "video");
-        const settings = {
-          ...this.opts.defaultRuntimeSettings,
-          ...opts.settings ?? {}
-        };
-        const downloadPath = opts.customDownloadPath?.trim() || settings.downloadPath?.trim() || this.opts.defaultDownloadDir;
-        const merged = { ...settings, downloadPath };
-        const extra = this.opts.extraArgs ? [...this.opts.extraArgs()] : [];
-        return buildDownloadArgs(
-          {
-            url: input.url,
-            type,
-            format: opts.format,
-            audioFormat: opts.audioFormat,
-            audioFormatIds: opts.audioFormatIds ? [...opts.audioFormatIds] : void 0,
-            startTime: opts.startTime,
-            endTime: opts.endTime,
-            customDownloadPath: opts.customDownloadPath,
-            customFilenameTemplate: opts.customFilenameTemplate,
-            containerFormat: opts.containerFormat
-          },
-          this.opts.defaultDownloadDir,
-          merged,
-          extra
-        );
-      }
-      /** Diagnostic: return the resolved argv yt-dlp would be invoked with. */
-      describeCommandFor(input) {
-        return formatYtDlpCommand(this.buildArgsFor(input));
-      }
-      getYtDlp(binaryPath) {
-        if (this.cachedYtDlp && this.cachedYtDlpPath === binaryPath) return this.cachedYtDlp;
-        this.cachedYtDlp = new YTDlpWrapCtor2(binaryPath);
-        this.cachedYtDlpPath = binaryPath;
-        return this.cachedYtDlp;
-      }
-    };
-  }
-});
-
 // ../../packages/downloader-core/src/format-preferences.ts
 var ONE_CLICK_CONTAINER_OPTIONS, qualityPresetToVideoHeight, qualityPresetToAudioAbr, dedupe, getQualityPreset, buildAudioSelectors, buildVideoFormatPreference, buildAudioFormatPreference;
 var init_format_preferences = __esm({
@@ -19716,6 +19820,7 @@ __export(src_exports2, {
   buildVideoFormatPreference: () => buildVideoFormatPreference,
   buildVideoInfoArgs: () => buildVideoInfoArgs,
   downloaderContract: () => downloaderContract,
+  extractSavedFilePath: () => extractSavedFilePath,
   formatYtDlpCommand: () => formatYtDlpCommand,
   parseBrowserCookiesSetting: () => parseBrowserCookiesSetting,
   resolveAudioFormatSelector: () => resolveAudioFormatSelector,
@@ -25867,14 +25972,14 @@ function errorEnvelope(code, message, details) {
 
 // src/subcommands/index.ts
 async function dispatchSubcommand(subcommand, args, ctx) {
-  const path3 = subcommand.split("/").filter(Boolean);
-  switch (path3[0]) {
+  const path4 = subcommand.split("/").filter(Boolean);
+  switch (path4[0]) {
     case "status":
       return ok(await ctx.client.stats());
     case "download":
-      return await handleDownload(path3.slice(1), args, ctx);
+      return await handleDownload(path4.slice(1), args, ctx);
     case "history":
-      return await handleHistory(path3.slice(1), args, ctx);
+      return await handleHistory(path4.slice(1), args, ctx);
     case "rss":
       return notImplemented("rss", "NEX-132 owns :rss subcommands");
     default:
@@ -26277,7 +26382,7 @@ var AutomationClient = class {
     }
     return res.json;
   }
-  async rawFetch(method, path3, body) {
+  async rawFetch(method, path4, body) {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), this.requestTimeoutMs);
     try {
@@ -26292,7 +26397,7 @@ var AutomationClient = class {
         signal: ctrl.signal
       };
       if (method === "POST") init.body = JSON.stringify(body ?? {});
-      const res = await this.fetchImpl(`${this.baseUrl}${path3}`, init);
+      const res = await this.fetchImpl(`${this.baseUrl}${path4}`, init);
       const text2 = await res.text();
       let json2 = null;
       if (text2.length > 0) {
@@ -26377,31 +26482,31 @@ function resolveDescriptorPath(opts = {}) {
   return join(base, DIRNAME, DESCRIPTOR_FILE);
 }
 function readDescriptor(opts = {}) {
-  const path3 = resolveDescriptorPath(opts);
+  const path4 = resolveDescriptorPath(opts);
   const exists2 = opts.exists ?? existsSync;
   const read = opts.readFile ?? ((p) => readFileSync(p, "utf-8"));
-  if (!exists2(path3)) {
+  if (!exists2(path4)) {
     return {
       ok: false,
-      path: path3,
+      path: path4,
       envelope: errorEnvelope(
         "DESKTOP_NOT_READY",
-        `automation descriptor not found at ${path3}`,
-        { path: path3 }
+        `automation descriptor not found at ${path4}`,
+        { path: path4 }
       )
     };
   }
   let parsed;
   try {
-    parsed = JSON.parse(read(path3));
+    parsed = JSON.parse(read(path4));
   } catch (err) {
     return {
       ok: false,
-      path: path3,
+      path: path4,
       envelope: errorEnvelope(
         "DESKTOP_NOT_READY",
         `automation descriptor is malformed: ${err instanceof Error ? err.message : err}`,
-        { path: path3 }
+        { path: path4 }
       )
     };
   }
@@ -26409,11 +26514,11 @@ function readDescriptor(opts = {}) {
   if (!v.ok) {
     return {
       ok: false,
-      path: path3,
-      envelope: errorEnvelope("DESKTOP_NOT_READY", v.reason, { path: path3 })
+      path: path4,
+      envelope: errorEnvelope("DESKTOP_NOT_READY", v.reason, { path: path4 })
     };
   }
-  return { ok: true, descriptor: v.value, path: path3 };
+  return { ok: true, descriptor: v.value, path: path4 };
 }
 function validateDescriptor(value2) {
   if (typeof value2 !== "object" || value2 === null) {
@@ -27233,9 +27338,9 @@ async function defaultFetchLatest() {
     clearTimeout(timer);
   }
 }
-function readCache(path3) {
+function readCache(path4) {
   try {
-    const raw = readFileSync4(path3, "utf-8");
+    const raw = readFileSync4(path4, "utf-8");
     const parsed = JSON.parse(raw);
     if (typeof parsed.version === "string" && typeof parsed.fetchedAt === "number") {
       return { version: parsed.version, fetchedAt: parsed.fetchedAt };
@@ -27244,10 +27349,10 @@ function readCache(path3) {
   }
   return null;
 }
-function writeCache(path3, payload) {
+function writeCache(path4, payload) {
   try {
-    mkdirSync(dirname2(path3), { recursive: true });
-    writeFileSync(path3, JSON.stringify(payload), "utf-8");
+    mkdirSync(dirname2(path4), { recursive: true });
+    writeFileSync(path4, JSON.stringify(payload), "utf-8");
   } catch {
   }
 }
