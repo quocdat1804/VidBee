@@ -53,6 +53,8 @@
   ],
   "scripts": {
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "build": "node scripts/build.mjs",
     "verify-dist": "node -e \"const fs=require('node:fs');for(const f of ['dist/index.mjs','dist/bin/vidbee.mjs']){if(!fs.existsSync(f)){process.stderr.write('missing build artifact: '+f+'\\n');process.exit(1)}}\"",
     "prepublishOnly": "pnpm run build && pnpm run verify-dist"
@@ -71,7 +73,8 @@
     "@vidbee/logger": "workspace:*",
     "@vidbee/task-queue": "workspace:*",
     "esbuild": "^0.25.0",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.1"
   },
   "engines": {
     "node": ">=20"
