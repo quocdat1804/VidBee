@@ -122,15 +122,15 @@ mac:
   entitlementsInherit: build/entitlements.mac.plist
   notarize: true
   artifactName: ${name}-${version}-${arch}.${ext}
+  # Arch is driven by the electron-builder CLI flags in the build scripts, not
+  # by a per-target `arch` list here: a config `arch` list overrides the CLI
+  # flags, so `--arm64` would still also build x64 and then fail after-pack on
+  # the arm64-only bundled ffmpeg. `build:mac` passes --x64 --arm64;
+  # `build:mac:arm64` passes --arm64 only. Note `extends` cannot narrow this
+  # list either — electron-builder concatenates arrays when merging configs.
   target:
-    - target: zip
-      arch:
-        - arm64
-        - x64
-    - target: dmg
-      arch:
-        - arm64
-        - x64
+    - zip
+    - dmg
 linux:
   target:
     - AppImage
