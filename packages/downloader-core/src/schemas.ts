@@ -113,7 +113,7 @@ export const DownloadRuntimeSettingsSchema = z.object({
   embedThumbnail: z.boolean().optional(),
   embedMetadata: z.boolean().optional(),
   embedChapters: z.boolean().optional(),
-  filenameStyle: z.enum(['classic', 'basic', 'pretty', 'nerdy']).optional(),
+  filenameStyle: z.enum(FILENAME_STYLES).optional(),
   filenameViaVidBee: z.boolean().optional(),
   shareWatermark: z.boolean().optional()
 })

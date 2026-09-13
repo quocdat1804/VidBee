@@ -5,6 +5,39 @@ export type FilenameStyle = (typeof FILENAME_STYLES)[number]
 export const DEFAULT_FILENAME_STYLE: FilenameStyle = 'source'
 export const DEFAULT_FILENAME_VIA_VIDBEE = false
 
+/**
+ * Marker value stored after the source-title filename migration runs. Bump it
+ * to force a new one-time pass on installs that already migrated.
+ */
+export const FILENAME_DEFAULTS_MIGRATION = 'source-title-v1'
+
+/**
+ * One-time migration onto the untouched source title.
+ *
+ * Installs made before the `source` style existed persisted the decorated
+ * defaults (`pretty` + `via VidBee`), and a persisted value wins over the
+ * schema default, so those users would keep decorated names forever without
+ * this pass. The fork intentionally overrides even a deliberate decoration
+ * choice: filenames are expected to match the source title.
+ *
+ * Returns null once the marker matches so a later explicit choice sticks.
+ *
+ * @param migration Marker previously persisted, if any.
+ * @returns The settings to apply, or null when the migration already ran.
+ */
+export const migrateFilenameDefaults = (
+  migration: unknown
+): { filenameStyle: FilenameStyle; filenameViaVidBee: boolean } | null => {
+  if (migration === FILENAME_DEFAULTS_MIGRATION) {
+    return null
+  }
+
+  return {
+    filenameStyle: DEFAULT_FILENAME_STYLE,
+    filenameViaVidBee: DEFAULT_FILENAME_VIA_VIDBEE
+  }
+}
+
 export const VIA_VIDBEE_LABEL = 'via VidBee'
 export const DEFAULT_FILENAME_TEMPLATE = '%(title)s.%(ext)s'
 export const SHARED_FILENAME_TEMPLATE = `%(title)s ${VIA_VIDBEE_LABEL}.%(ext)s`

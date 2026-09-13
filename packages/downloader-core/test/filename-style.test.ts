@@ -4,9 +4,11 @@ import {
   DEFAULT_FILENAME_STYLE,
   DEFAULT_FILENAME_TEMPLATE,
   DEFAULT_FILENAME_VIA_VIDBEE,
+  FILENAME_DEFAULTS_MIGRATION,
   FILENAME_STYLE_PREVIEWS,
   FILENAME_STYLES,
   isFilenameStyle,
+  migrateFilenameDefaults,
   resolveFilenameTemplate,
   VIA_VIDBEE_LABEL
 } from '../src/filename-style'
@@ -104,6 +106,54 @@ describe('appendPlatformFilenameSafetyArgs', () => {
     const mac: string[] = []
     appendPlatformFilenameSafetyArgs(mac, 'darwin')
     expect(mac).toEqual([])
+  })
+})
+
+describe('migrateFilenameDefaults', () => {
+  it('moves an install that never recorded the migration onto the source title', () => {
+    expect(migrateFilenameDefaults(undefined)).toEqual({
+      filenameStyle: 'source',
+      filenameViaVidBee: false
+    })
+  })
+
+  it('overrides a decorated choice so existing installs get bare titles', () => {
+    // The fork deliberately overrides even a deliberate decoration choice.
+    for (const marker of [null, '', 'legacy', 'source-title-v0']) {
+      expect(migrateFilenameDefaults(marker)).toEqual({
+        filenameStyle: 'source',
+        filenameViaVidBee: false
+      })
+    }
+  })
+
+  it('reports nothing to do once the marker matches', () => {
+    expect(migrateFilenameDefaults(FILENAME_DEFAULTS_MIGRATION)).toBeNull()
+  })
+
+  it('applies the module defaults rather than duplicating the literals', () => {
+    const migrated = migrateFilenameDefaults(undefined)
+    expect(migrated?.filenameStyle).toBe(DEFAULT_FILENAME_STYLE)
+    expect(migrated?.filenameViaVidBee).toBe(DEFAULT_FILENAME_VIA_VIDBEE)
+  })
+
+  it('is idempotent across repeated starts', () => {
+    const first = migrateFilenameDefaults(undefined)
+    expect(first).not.toBeNull()
+    // A second launch sees the marker written by the first.
+    expect(migrateFilenameDefaults(FILENAME_DEFAULTS_MIGRATION)).toBeNull()
+  })
+
+  it('produces a template with no decoration after migrating', () => {
+    const migrated = migrateFilenameDefaults(undefined)
+    const template = resolveFilenameTemplate(
+      migrated?.filenameStyle,
+      'video',
+      false,
+      migrated?.filenameViaVidBee
+    )
+    expect(template).toBe('%(title)s.%(ext)s')
+    expect(template).not.toContain(VIA_VIDBEE_LABEL)
   })
 })
 

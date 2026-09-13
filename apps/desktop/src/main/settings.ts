@@ -1,6 +1,10 @@
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
+import {
+  FILENAME_DEFAULTS_MIGRATION,
+  migrateFilenameDefaults
+} from '@vidbee/downloader-core/filename-style'
 import { normalizeSubtitleLanguages } from '@vidbee/downloader-core/subtitle-languages'
 import { detectSystemProfile } from '@vidbee/i18n/system-locale'
 import { parseAsrTier } from '@vidbee/transcription'
@@ -26,6 +30,14 @@ const ElectronStore = require('electron-store')
 const Store = ElectronStore.default || ElectronStore
 
 const OLD_DEFAULT_DOWNLOAD_PATH = path.join(os.homedir(), 'Downloads')
+
+/**
+ * Store key holding the one-time filename migration marker. Deliberately not
+ * part of AppSettings: it is app bookkeeping, so `getAll()` strips it to keep
+ * it out of the settings payload the renderer round-trips.
+ */
+const FILENAME_DEFAULTS_MIGRATION_KEY = 'filenameDefaultsMigration'
+
 const ensureDirectoryExists = (dir: string) => {
   try {
     fs.mkdirSync(dir, { recursive: true })
@@ -78,6 +90,7 @@ class SettingsManager {
     })
     this.ensureDownloadDirectory()
     this.ensureRequiredSettings()
+    this.migrateFilenameDefaults()
     this.acknowledgeFreshInstallWhatsNew()
     rememberPortableRoot()
   }
@@ -120,10 +133,11 @@ class SettingsManager {
   }
 
   getAll(): AppSettings {
+    const { [FILENAME_DEFAULTS_MIGRATION_KEY]: _migration, ...storedSettings } = this.store.store
     return {
       ...defaultSettings,
       downloadPath: DEFAULT_DOWNLOAD_PATH,
-      ...this.store.store,
+      ...storedSettings,
       autoUpdate: REQUIRED_AUTO_UPDATE,
       launchAtLogin: isPortableMode
         ? REQUIRED_LAUNCH_AT_LOGIN
@@ -223,6 +237,28 @@ class SettingsManager {
       ensureDirectoryExists(normalizedDownloadPath)
     } catch (error) {
       scopedLoggers.system.error('Failed to verify download directory:', error)
+    }
+  }
+
+  /**
+   * Move installs predating the `source` style onto the untouched source
+   * title. Runs once: the marker records the pass so a later explicit choice
+   * in Settings is not reverted on the next launch.
+   */
+  private migrateFilenameDefaults(): void {
+    try {
+      const migrated = migrateFilenameDefaults(this.store.get(FILENAME_DEFAULTS_MIGRATION_KEY))
+      if (!migrated) {
+        return
+      }
+
+      this.store.set(migrated)
+      this.store.set(FILENAME_DEFAULTS_MIGRATION_KEY, FILENAME_DEFAULTS_MIGRATION)
+      scopedLoggers.system.info(
+        `Migrated filename defaults to ${migrated.filenameStyle} (via VidBee ${migrated.filenameViaVidBee})`
+      )
+    } catch (error) {
+      scopedLoggers.system.error('Failed to migrate filename defaults:', error)
     }
   }
 
