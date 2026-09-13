@@ -7,7 +7,7 @@
     "check:i18n": "pnpm --filter ./apps/desktop run check:i18n",
     "typecheck": "pnpm --filter ./apps/desktop run typecheck",
     "test": "pnpm -r run test && pnpm run test:internal",
-    "test:internal": "node --test internal/tests/after-pack-resources-path.test.cjs internal/tests/setup-dev-binaries-timeout.test.mjs",
+    "test:internal": "node --experimental-strip-types --test internal/tests/after-pack-resources-path.test.cjs internal/tests/playlist-download-path.test.mjs internal/tests/setup-dev-binaries-timeout.test.mjs",
     "dev": "pnpm --filter ./apps/desktop run dev",
     "dev:update-notice": "pnpm --filter ./apps/desktop run dev:update-notice",
     "start": "pnpm --filter ./apps/desktop run start",

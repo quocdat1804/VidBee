@@ -95,3 +95,21 @@ export const applyAutoVideoDownloadPath = (
     )
   }
 }
+
+/**
+ * Resolve the on-disk folder for a playlist download.
+ *
+ * Deliberately flat: a playlist gets no folder of its own. Upstream used to
+ * create `{downloadPath}/Playlists/{title}` (1.3.13 exposed a
+ * `createSubfolder` toggle for it, which v2 dropped entirely), which scattered
+ * one playlist's files into a directory the user never asked for. Files land
+ * in the chosen directory instead, so grouping stays the user's decision.
+ *
+ * @param customDownloadPath Folder the user picked, if any.
+ * @param downloadPath Configured download directory, used otherwise.
+ * @returns Absolute directory playlist entries are written into.
+ */
+export const resolvePlaylistDownloadPath = (
+  customDownloadPath: string | undefined,
+  downloadPath: string
+): string => customDownloadPath?.trim() || downloadPath

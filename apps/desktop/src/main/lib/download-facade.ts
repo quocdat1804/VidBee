@@ -15,7 +15,6 @@
  * `glitchTipEventId` remains a best-effort no-op in this iteration.
  */
 import { EventEmitter } from 'node:events'
-import path from 'node:path'
 
 import {
   isDownloadTaskKind,
@@ -41,7 +40,7 @@ import { settingsManager } from '../settings'
 import { scopedLoggers } from '../utils/logger'
 import { toSharedSettings } from './command-utils'
 import { shouldSurfaceQueuedDownload } from './download-queue-events'
-import { applyAutoVideoDownloadPath } from './path-resolver'
+import { applyAutoVideoDownloadPath, resolvePlaylistDownloadPath } from './path-resolver'
 import { projectProgressForRenderer, projectTaskForRenderer } from './projection'
 import {
   applyDesktopQueueConcurrency,
@@ -398,9 +397,10 @@ class DownloadFacade extends EventEmitter {
     }
 
     const settings = settingsManager.getAll()
-    const resolvedDownloadPath =
-      options.customDownloadPath?.trim() ||
-      path.join(settings.downloadPath, 'Playlists', sanitizePathSegment(playlist.title))
+    const resolvedDownloadPath = resolvePlaylistDownloadPath(
+      options.customDownloadPath,
+      settings.downloadPath
+    )
     ensureDirectoryExists(resolvedDownloadPath)
 
     const entries: PlaylistDownloadResult['entries'] = []
@@ -515,12 +515,5 @@ class DownloadFacade extends EventEmitter {
     logger.debug('download-facade: updateDownloadInfo dropped', { id, updates })
   }
 }
-
-const sanitizePathSegment = (value: string): string =>
-  value
-    .replace(/[\\/:*?"<>|]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, 120) || 'Playlist'
 
 export const downloadEngine = new DownloadFacade()
