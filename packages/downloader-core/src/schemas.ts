@@ -1,5 +1,10 @@
 import { z } from 'zod'
 import {
+  DEFAULT_FILENAME_STYLE,
+  DEFAULT_FILENAME_VIA_VIDBEE,
+  FILENAME_STYLES
+} from './filename-style'
+import {
   DEFAULT_SUBTITLE_LANGUAGES,
   MAX_SUBTITLE_LANGUAGES,
   normalizeSubtitleLanguages
@@ -152,8 +157,8 @@ export const WebAppSettingsSchema = z.object({
   embedThumbnail: z.boolean(),
   embedMetadata: z.boolean(),
   embedChapters: z.boolean(),
-  filenameStyle: z.enum(['classic', 'basic', 'pretty', 'nerdy']).default('pretty'),
-  filenameViaVidBee: z.boolean().default(true),
+  filenameStyle: z.enum(FILENAME_STYLES).default(DEFAULT_FILENAME_STYLE),
+  filenameViaVidBee: z.boolean().default(DEFAULT_FILENAME_VIA_VIDBEE),
   shareWatermark: z.boolean(),
   autoTranscribeAfterDownload: z.boolean().default(true),
   maxConcurrentTranscriptions: z.number().int().min(1).max(4).default(1),

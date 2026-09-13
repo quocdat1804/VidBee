@@ -538,7 +538,8 @@
       "basic": "einfach",
       "classic": "klassisch",
       "nerdy": "nerd",
-      "pretty": "hübsch"
+      "pretty": "hübsch",
+      "source": "Quelle"
     },
     "filenameStylePreviewAudio": "Vorschau der Audiodatei",
     "filenameStylePreviewVideo": "Vorschau der Videodatei",

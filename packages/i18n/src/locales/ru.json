@@ -538,7 +538,8 @@
       "basic": "базовый",
       "classic": "классика",
       "nerdy": "гик",
-      "pretty": "красивый"
+      "pretty": "красивый",
+      "source": "исходный"
     },
     "filenameStylePreviewAudio": "предпросмотр аудиофайла",
     "filenameStylePreviewVideo": "предпросмотр видеофайла",

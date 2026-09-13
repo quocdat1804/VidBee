@@ -1,6 +1,8 @@
 import { looksLikeNetscapeCookies } from "@vidbee/downloader-core/cookie-setup";
 import {
 	applyViaVidBeeFilename,
+	DEFAULT_FILENAME_STYLE,
+	DEFAULT_FILENAME_VIA_VIDBEE,
 	FILENAME_STYLE_PREVIEWS,
 	FILENAME_STYLES,
 	type FilenameStyle,
@@ -584,7 +586,9 @@ export const SettingsPage = () => {
 
 						<TabPanel className="mt-2 space-y-4" value="metadata">
 							<FilenameStylePicker
-								filenameViaVidBee={settings.filenameViaVidBee ?? true}
+								filenameViaVidBee={
+									settings.filenameViaVidBee ?? DEFAULT_FILENAME_VIA_VIDBEE
+								}
 								onChange={(style) =>
 									updateSingleSetting("filenameStyle", style, updateSettings)
 								}
@@ -1080,7 +1084,7 @@ const FilenameStylePicker = ({
 	value?: FilenameStyle;
 }) => {
 	const { t } = useTranslation();
-	const selectedStyle = isFilenameStyle(value) ? value : "pretty";
+	const selectedStyle = isFilenameStyle(value) ? value : DEFAULT_FILENAME_STYLE;
 	const preview = FILENAME_STYLE_PREVIEWS[selectedStyle];
 
 	return (

@@ -48,7 +48,6 @@ const YOUTUBE_HOST_SUFFIXES = ['youtube.com', 'youtu.be', 'youtube-nocookie.com'
 // extraction has more fallbacks before failing.
 const YOUTUBE_SAFE_PLAYER_CLIENTS = 'default,-web'
 export const VIDBEE_OUTPUT_PATH_PREFIX = '__VIDBEE_OUTPUT_PATH__:'
-const WINDOWS_FILENAME_TRIM_LENGTH = '120'
 const DIRECT_MEDIA_SEGMENT_EXTENSION = /\.(?:cmfa|cmfv|m4s)(?:$|[?#])/i
 
 // GitHub issues #326, #355, #325: yt-dlp's default of 10 retries and no
@@ -312,6 +311,9 @@ export const sanitizeFilenameTemplate = (
 
 /**
  * Appends platform-specific filename safety flags.
+ *
+ * No `--trim-filenames`: length capping rewrites the source title, and saved
+ * names are expected to match the video title verbatim.
  */
 export const appendPlatformFilenameSafetyArgs = (
   args: string[],
@@ -319,11 +321,6 @@ export const appendPlatformFilenameSafetyArgs = (
 ): void => {
   if (platform === 'win32') {
     args.push('--windows-filenames')
-  }
-
-  if (platform === 'win32' || platform === 'darwin' || platform === 'linux') {
-    args.push('--trim-filenames', WINDOWS_FILENAME_TRIM_LENGTH)
-    return
   }
 }
 

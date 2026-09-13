@@ -581,7 +581,8 @@
       "basic": "简洁",
       "classic": "经典",
       "nerdy": "极客",
-      "pretty": "美观"
+      "pretty": "美观",
+      "source": "原始"
     },
     "filenameStylePreviewAudio": "音频文件预览",
     "filenameStylePreviewVideo": "视频文件预览",

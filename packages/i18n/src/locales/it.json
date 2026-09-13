@@ -538,7 +538,8 @@
       "basic": "base",
       "classic": "classico",
       "nerdy": "nerd",
-      "pretty": "carino"
+      "pretty": "carino",
+      "source": "originale"
     },
     "filenameStylePreviewAudio": "anteprima file audio",
     "filenameStylePreviewVideo": "anteprima file video",

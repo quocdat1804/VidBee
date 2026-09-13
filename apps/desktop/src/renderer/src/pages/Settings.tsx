@@ -38,6 +38,7 @@ import {
 } from '@shared/types'
 import { useNavigate, useRouteContext, useSearch } from '@tanstack/react-router'
 import {
+  DEFAULT_FILENAME_STYLE,
   FILENAME_STYLE_PREVIEWS,
   FILENAME_STYLES,
   isFilenameStyle
@@ -1033,7 +1034,7 @@ const FilenameStylePicker = ({
   value?: FilenameStyle
 }) => {
   const { t } = useTranslation()
-  const selectedStyle = isFilenameStyle(value) ? value : 'pretty'
+  const selectedStyle = isFilenameStyle(value) ? value : DEFAULT_FILENAME_STYLE
   const preview = FILENAME_STYLE_PREVIEWS[selectedStyle]
 
   return (

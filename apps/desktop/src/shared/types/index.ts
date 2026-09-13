@@ -1,4 +1,8 @@
-import type { FilenameStyle } from '@vidbee/downloader-core/filename-style'
+import {
+  DEFAULT_FILENAME_STYLE,
+  DEFAULT_FILENAME_VIA_VIDBEE,
+  type FilenameStyle
+} from '@vidbee/downloader-core/filename-style'
 import type { OneClickContainerOption } from '@vidbee/downloader-core/format-preferences'
 import { DEFAULT_SUBTITLE_LANGUAGES } from '@vidbee/downloader-core/subtitle-languages'
 import { defaultLanguageCode, type LanguageCode } from '@vidbee/i18n/languages'
@@ -393,8 +397,8 @@ export const defaultSettings: AppSettings = {
   embedThumbnail: false,
   embedMetadata: true,
   embedChapters: true,
-  filenameStyle: 'pretty',
-  filenameViaVidBee: true,
+  filenameStyle: DEFAULT_FILENAME_STYLE,
+  filenameViaVidBee: DEFAULT_FILENAME_VIA_VIDBEE,
   shareWatermark: false,
   autoTranscribeAfterDownload: true,
   maxConcurrentTranscriptions: 1,

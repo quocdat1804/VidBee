@@ -538,7 +538,8 @@
       "basic": "dasar",
       "classic": "klasik",
       "nerdy": "nerd",
-      "pretty": "cantik"
+      "pretty": "cantik",
+      "source": "sumber"
     },
     "filenameStylePreviewAudio": "pratinjau file audio",
     "filenameStylePreviewVideo": "pratinjau file video",

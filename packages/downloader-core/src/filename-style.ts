@@ -1,9 +1,9 @@
-export const FILENAME_STYLES = ['classic', 'basic', 'pretty', 'nerdy'] as const
+export const FILENAME_STYLES = ['source', 'classic', 'basic', 'pretty', 'nerdy'] as const
 
 export type FilenameStyle = (typeof FILENAME_STYLES)[number]
 
-export const DEFAULT_FILENAME_STYLE: FilenameStyle = 'pretty'
-export const DEFAULT_FILENAME_VIA_VIDBEE = true
+export const DEFAULT_FILENAME_STYLE: FilenameStyle = 'source'
+export const DEFAULT_FILENAME_VIA_VIDBEE = false
 
 export const VIA_VIDBEE_LABEL = 'via VidBee'
 export const DEFAULT_FILENAME_TEMPLATE = '%(title)s.%(ext)s'
@@ -29,6 +29,12 @@ const FILENAME_STYLE_TEMPLATES: Record<FilenameStyle, { audio: string; video: st
   pretty: {
     audio: `%(title)s - ${AUTHOR_FIELD} (%(extractor)s).%(ext)s`,
     video: `%(title)s - ${AUTHOR_FIELD} (%(height)sp, %(vcodec)s, %(extractor)s).%(ext)s`
+  },
+  // Keep the source title untouched: no author, resolution, extractor or
+  // `via VidBee` decoration, so the saved name matches the video exactly.
+  source: {
+    audio: DEFAULT_FILENAME_TEMPLATE,
+    video: DEFAULT_FILENAME_TEMPLATE
   }
 }
 
@@ -48,6 +54,10 @@ export const FILENAME_STYLE_PREVIEWS: Record<FilenameStyle, { audio: string; vid
   pretty: {
     audio: 'Audio Title - Audio Author (youtube).mp3',
     video: 'Video Title - Video Author (1080p, h264, youtube).mp4'
+  },
+  source: {
+    audio: 'Audio Title.mp3',
+    video: 'Video Title.mp4'
   }
 }
 
@@ -94,10 +104,10 @@ export const applyViaVidBeeFilename = (
  * Resolve the yt-dlp output template for a filename style and download type.
  *
  * Custom caller templates still win. Share-watermark mode always uses the
- * branded title template. An unset style uses pretty. An unset via VidBee
- * flag defaults to on.
+ * branded title template. An unset style uses `source`. An unset via VidBee
+ * flag defaults to off so saved names match the source title.
  *
- * @param style Saved filename style, or undefined for the pretty default.
+ * @param style Saved filename style, or undefined for the `source` default.
  * @param type Video or audio download.
  * @param shareWatermark Whether the share-watermark filename should be used.
  * @param filenameViaVidBee Whether to append via VidBee before the extension.

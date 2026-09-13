@@ -581,7 +581,8 @@
       "basic": "basic",
       "classic": "classic",
       "nerdy": "nerdy",
-      "pretty": "pretty"
+      "pretty": "pretty",
+      "source": "source"
     },
     "filenameStylePreviewAudio": "audio file preview",
     "filenameStylePreviewVideo": "video file preview",

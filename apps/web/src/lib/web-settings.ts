@@ -1,5 +1,7 @@
 import type { DownloadType } from "@vidbee/downloader-core";
 import {
+	DEFAULT_FILENAME_STYLE,
+	DEFAULT_FILENAME_VIA_VIDBEE,
 	type FilenameStyle,
 	isFilenameStyle,
 } from "@vidbee/downloader-core/filename-style";
@@ -86,8 +88,8 @@ export const defaultWebSettings: WebAppSettings = {
 	embedThumbnail: false,
 	embedMetadata: true,
 	embedChapters: true,
-	filenameStyle: "pretty",
-	filenameViaVidBee: true,
+	filenameStyle: DEFAULT_FILENAME_STYLE,
+	filenameViaVidBee: DEFAULT_FILENAME_VIA_VIDBEE,
 	shareWatermark: false,
 };
 

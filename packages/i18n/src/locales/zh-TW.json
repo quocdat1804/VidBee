@@ -538,7 +538,8 @@
       "basic": "簡潔",
       "classic": "經典",
       "nerdy": "極客",
-      "pretty": "美觀"
+      "pretty": "美觀",
+      "source": "原始"
     },
     "filenameStylePreviewAudio": "音訊檔案預覽",
     "filenameStylePreviewVideo": "影片檔案預覽",

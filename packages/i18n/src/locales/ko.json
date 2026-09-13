@@ -538,7 +538,8 @@
       "basic": "기본",
       "classic": "클래식",
       "nerdy": "너디",
-      "pretty": "프리티"
+      "pretty": "프리티",
+      "source": "원본"
     },
     "filenameStylePreviewAudio": "오디오 파일 미리보기",
     "filenameStylePreviewVideo": "동영상 파일 미리보기",

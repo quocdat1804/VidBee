@@ -538,7 +538,8 @@
       "basic": "ベーシック",
       "classic": "クラシック",
       "nerdy": "ナーディ",
-      "pretty": "プリティ"
+      "pretty": "プリティ",
+      "source": "ソース"
     },
     "filenameStylePreviewAudio": "音声ファイルのプレビュー",
     "filenameStylePreviewVideo": "動画ファイルのプレビュー",

@@ -538,7 +538,8 @@
       "basic": "temel",
       "classic": "klasik",
       "nerdy": "nerd",
-      "pretty": "şık"
+      "pretty": "şık",
+      "source": "kaynak"
     },
     "filenameStylePreviewAudio": "ses dosyası önizlemesi",
     "filenameStylePreviewVideo": "video dosyası önizlemesi",

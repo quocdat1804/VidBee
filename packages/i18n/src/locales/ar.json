@@ -538,7 +538,8 @@
       "basic": "أساسي",
       "classic": "كلاسيكي",
       "nerdy": "تقني",
-      "pretty": "جميل"
+      "pretty": "جميل",
+      "source": "المصدر"
     },
     "filenameStylePreviewAudio": "معاينة ملف الصوت",
     "filenameStylePreviewVideo": "معاينة ملف الفيديو",
