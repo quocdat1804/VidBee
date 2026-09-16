@@ -316,7 +316,7 @@
     "confirmDeleteSelectedDescription": "Hapus {{count}} item dari riwayat Anda. File tetap di disk.",
     "alsoDeleteFiles": "Hapus juga file",
     "confirmDeletePlaylistTitle": "Hapus riwayat playlist?",
-    "confirmDeletePlaylistDescription": "Hapus {{count}} item dari {{title}} dan hapus file-nya.",
+    "confirmDeletePlaylistDescription": "Hapus {{count}} item dari {{title}}. File tetap di disk.",
     "copyToClipboard": "Salin ke clipboard",
     "copyUrl": "Salin URL",
     "date": "Tanggal",

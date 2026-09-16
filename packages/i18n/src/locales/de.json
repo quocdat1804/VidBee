@@ -316,7 +316,7 @@
     "confirmDeleteSelectedDescription": "{{count}} Elemente aus deinem Verlauf entfernen. Dateien bleiben auf der Festplatte.",
     "alsoDeleteFiles": "Dateien ebenfalls löschen",
     "confirmDeletePlaylistTitle": "Playlist-Verlauf entfernen?",
-    "confirmDeletePlaylistDescription": "{{count}} Elemente aus {{title}} entfernen und ihre Dateien löschen.",
+    "confirmDeletePlaylistDescription": "{{count}} Elemente aus {{title}} entfernen. Dateien bleiben auf der Festplatte.",
     "copyToClipboard": "In Zwischenablage kopieren",
     "copyUrl": "URL kopieren",
     "date": "Datum",

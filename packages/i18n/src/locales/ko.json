@@ -316,7 +316,7 @@
     "confirmDeleteSelectedDescription": "기록에서 {{count}}개 항목을 제거합니다. 파일은 디스크에 남아 있습니다.",
     "alsoDeleteFiles": "파일도 삭제",
     "confirmDeletePlaylistTitle": "재생목록 기록을 제거할까요?",
-    "confirmDeletePlaylistDescription": "{{title}}에서 {{count}}개 항목을 제거하고 파일을 삭제합니다.",
+    "confirmDeletePlaylistDescription": "{{title}}에서 {{count}}개 항목을 제거합니다. 파일은 디스크에 남아 있습니다.",
     "copyToClipboard": "클립보드에 복사",
     "copyUrl": "URL 복사",
     "date": "날짜",

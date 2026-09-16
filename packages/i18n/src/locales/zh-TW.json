@@ -316,7 +316,7 @@
     "confirmDeleteSelectedDescription": "從歷史紀錄移除 {{count}} 項。檔案仍會保留在磁碟上。",
     "alsoDeleteFiles": "同時刪除檔案",
     "confirmDeletePlaylistTitle": "移除播放清單歷史紀錄？",
-    "confirmDeletePlaylistDescription": "從 {{title}} 移除 {{count}} 項並刪除其檔案。",
+    "confirmDeletePlaylistDescription": "從 {{title}} 移除 {{count}} 項。檔案仍會保留在磁碟上。",
     "copyToClipboard": "複製到剪貼簿",
     "copyUrl": "複製連結",
     "date": "日期",

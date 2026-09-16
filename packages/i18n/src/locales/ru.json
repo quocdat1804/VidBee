@@ -316,7 +316,7 @@
     "confirmDeleteSelectedDescription": "Удалить {{count}} элементов из истории. Файлы останутся на диске.",
     "alsoDeleteFiles": "Также удалить файлы",
     "confirmDeletePlaylistTitle": "Удалить историю плейлиста?",
-    "confirmDeletePlaylistDescription": "Удалить {{count}} элементов из {{title}} и удалить их файлы.",
+    "confirmDeletePlaylistDescription": "Удалить {{count}} элементов из {{title}}. Файлы останутся на диске.",
     "copyToClipboard": "Копировать в буфер обмена",
     "copyUrl": "Копировать URL",
     "date": "Дата",

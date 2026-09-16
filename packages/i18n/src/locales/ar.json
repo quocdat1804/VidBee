@@ -316,7 +316,7 @@
     "confirmDeleteSelectedDescription": "إزالة {{count}} عنصرًا من السجل. تبقى الملفات على القرص.",
     "alsoDeleteFiles": "احذف الملفات أيضًا",
     "confirmDeletePlaylistTitle": "إزالة سجل قائمة التشغيل؟",
-    "confirmDeletePlaylistDescription": "إزالة {{count}} عنصرًا من {{title}} وحذف ملفاتها.",
+    "confirmDeletePlaylistDescription": "إزالة {{count}} عنصرًا من {{title}}. تبقى الملفات على القرص.",
     "copyToClipboard": "نسخ إلى الحافظة",
     "copyUrl": "نسخ الرابط",
     "date": "التاريخ",

@@ -316,7 +316,7 @@
     "confirmDeleteSelectedDescription": "Geçmişinizden {{count}} öğeyi kaldırın. Dosyalar diskte kalır.",
     "alsoDeleteFiles": "Dosyaları da sil",
     "confirmDeletePlaylistTitle": "Oynatma listesi geçmişini silmek ister misiniz?",
-    "confirmDeletePlaylistDescription": "{{title}} öğesinden {{count}} öğeyi kaldır ve dosyalarını sil.",
+    "confirmDeletePlaylistDescription": "{{title}} öğesinden {{count}} öğeyi kaldırın. Dosyalar diskte kalır.",
     "copyToClipboard": "Panoya kopyala",
     "copyUrl": "URL'i Kopyala",
     "date": "Tarih",

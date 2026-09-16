@@ -373,11 +373,11 @@ export function UnifiedDownloadHistory({
         toast.success(t('notifications.itemsRemoved', { count: confirmAction.ids.length }))
       }
       if (confirmAction.type === 'delete-playlist') {
-        const idSet = new Set(confirmAction.ids)
-        const playlistRecords = historyRecords.filter((record) => idSet.has(record.id))
+        // History only: removing a playlist's history must never touch files on
+        // disk. Unlike delete-selected there is no "also delete files" opt-in
+        // here, so deleting would be both silent and irreversible.
         await ipcServices.history.removeHistoryByPlaylistId(confirmAction.playlistId)
         removeHistoryRecordsByPlaylist(confirmAction.playlistId)
-        await deleteHistoryFiles(playlistRecords)
         pruneSelectedIds(confirmAction.ids)
         toast.success(
           t('notifications.playlistHistoryRemoved', { count: confirmAction.ids.length })

@@ -316,7 +316,7 @@
     "confirmDeleteSelectedDescription": "Rimuovi {{count}} elementi dalla cronologia. I file rimangono sul disco.",
     "alsoDeleteFiles": "Elimina anche i file",
     "confirmDeletePlaylistTitle": "Rimuovere la cronologia della playlist?",
-    "confirmDeletePlaylistDescription": "Rimuovi {{count}} elementi da {{title}} ed elimina i loro file.",
+    "confirmDeletePlaylistDescription": "Rimuovi {{count}} elementi da {{title}}. I file rimangono sul disco.",
     "copyToClipboard": "Copia negli appunti",
     "copyUrl": "Copia URL",
     "date": "Data",

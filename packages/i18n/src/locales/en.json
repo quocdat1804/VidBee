@@ -316,7 +316,7 @@
     "confirmDeleteSelectedDescription": "Remove {{count}} items from your history. Files stay on disk.",
     "alsoDeleteFiles": "Also delete files",
     "confirmDeletePlaylistTitle": "Remove playlist history?",
-    "confirmDeletePlaylistDescription": "Remove {{count}} items from {{title}} and delete their files.",
+    "confirmDeletePlaylistDescription": "Remove {{count}} items from {{title}}. Files stay on disk.",
     "copyToClipboard": "Copy to clipboard",
     "copyUrl": "Copy URL",
     "date": "Date",

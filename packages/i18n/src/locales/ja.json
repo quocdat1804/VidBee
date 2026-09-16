@@ -316,7 +316,7 @@
     "confirmDeleteSelectedDescription": "履歴から {{count}} 件を削除します。ファイルはディスクに残ります。",
     "alsoDeleteFiles": "ファイルも削除",
     "confirmDeletePlaylistTitle": "プレイリスト履歴を削除しますか？",
-    "confirmDeletePlaylistDescription": "{{title}} から {{count}} 件を削除し、ファイルを削除します。",
+    "confirmDeletePlaylistDescription": "{{title}} から {{count}} 件を削除します。ファイルはディスクに残ります。",
     "copyToClipboard": "クリップボードにコピー",
     "copyUrl": "URLをコピー",
     "date": "日付",
